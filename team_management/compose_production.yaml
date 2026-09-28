@@ -1,0 +1,46 @@
+name: team_management_prod
+
+
+services:
+
+  db:
+    extends:
+      file: base.yaml
+      service: db
+    volumes:
+      - db_data_prod:/var/lib/postgresql/data
+
+  redis:
+    extends:
+      file: base.yaml
+      service: redis
+    volumes:
+      - redis_data_prod:/data
+
+  fastapi:
+    extends:
+      file: base.yaml
+      service: fastapi
+    environment:
+      IS_TEST_DB: "False"
+    build:
+      context: .
+      target: "production"
+    command: sh -c "alembic upgrade head && \
+      gunicorn app.main:application \
+      --workers 1 \
+      --worker-class uvicorn.workers.UvicornWorker \
+      --bind 0.0.0.0:8000 \
+      --timeout 30"
+    ports: 
+      - "8000:8000"
+  
+
+volumes:
+  db_data_prod:
+  redis_data_prod:
+
+
+networks:
+  app_network:
+    driver: bridge

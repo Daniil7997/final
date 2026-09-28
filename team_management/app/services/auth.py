@@ -1,0 +1,66 @@
+from sqlalchemy.exc import IntegrityError
+
+from app.services.base import BaseService
+from app.core.security import hash_password
+from app.schemas.auth import (RegisterUserRequest,
+                              RegisterUserResponse,
+                              TokensRequest,
+                              TokensResponse,
+                              ChangePasswordRequest)
+from app.schemas.types import IdType
+from app.schemas.structural import UsersSchema
+from app.core.security import verify_password, create_tokens
+from app.domain.users.exceptions import (UserNotFoundError,
+                                         EmailAlreadyExistsError)
+from app.core.exceptions.auth import PasswordsDontMatchError
+
+
+class AuthService(BaseService):
+
+    async def register_user(self,
+                            data: RegisterUserRequest) -> RegisterUserResponse:
+        hashed_password = hash_password(password=data.password)
+        async with self.unit_of_work as uow:
+            repo = uow.users
+            try:
+                user: UsersSchema = await repo.register_user(
+                    name=data.name,
+                    email=data.email,
+                    hashed_password=hashed_password
+                    )
+                return RegisterUserResponse.model_validate(user.model_dump())
+            except IntegrityError:
+                raise EmailAlreadyExistsError()
+
+    async def get_tokens(self, data: TokensRequest) -> TokensResponse:
+        async with self.unit_of_work as uow:
+            repo = uow.users
+            user: UsersSchema | None = await repo.get_user_by_email(
+                email=data.email
+                )
+            if user is None:
+                raise UserNotFoundError()
+            check_password = verify_password(raw_password=data.password,
+                                             hash_password=user.password)
+            if not check_password:
+                raise PasswordsDontMatchError()
+            tokens = create_tokens(user_id=user.id, user_role=user.user_role)
+            return TokensResponse.model_validate(tokens.model_dump())
+
+    async def change_password(self,
+                              data: ChangePasswordRequest,
+                              id: IdType):
+        async with self.unit_of_work as uow:
+            repo = uow.users
+            user: UsersSchema | None = await repo.get_user_by_id(id=id)
+            if user is None:
+                raise UserNotFoundError()
+            passwords_match = verify_password(hash_password=user.password,
+                                              raw_password=data.old_password)
+            if not passwords_match:
+                raise PasswordsDontMatchError()
+            new_password = hash_password(data.new_password)
+            await repo.update_user_data_by_id(
+                id=id,
+                update_data={'password': new_password}
+                )

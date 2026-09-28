@@ -1,0 +1,115 @@
+from enum import StrEnum
+import uuid
+from datetime import datetime, date
+import typing
+
+from sqlalchemy.orm import (Mapped,
+                            mapped_column,
+                            relationship)
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import (Enum,
+                        ForeignKey,
+                        String,
+                        func)
+
+from app.models.base import Base
+
+
+if typing.TYPE_CHECKING:
+    from app.models.users import Users
+    from app.models.teams import Teams
+    from app.models.evaluations import Evaluations
+
+
+class TaskStatus(StrEnum):
+    open = 'open'
+    in_progress = 'in_progress'
+    done = 'done'
+
+
+class Tasks(Base):
+    __tablename__ = 'tasks'
+
+    description: Mapped[str] = mapped_column(String(2000))
+    status: Mapped[TaskStatus] = mapped_column(
+        Enum(TaskStatus, native_enum=False),
+        default=TaskStatus.open,
+        nullable=False
+        )
+    due_date: Mapped[date] = mapped_column(nullable=False)
+    verification_url: Mapped[str | None] = mapped_column(String(500),
+                                                         default=None,
+                                                         init=False)
+    # ------ ForeignKey ------
+    creator_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey('users.id', ondelete='CASCADE'),
+    )
+    assignee_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey('users.id', ondelete='CASCADE'),
+        default=None
+    )
+    team_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey('teams.id', ondelete='CASCADE')
+    )
+
+    # ------ RELATIONSHIP ------
+    # Users
+    creator: Mapped['Users'] = relationship(
+        back_populates='created_tasks',
+        foreign_keys=[creator_id],
+        init=False
+        )
+    assignee: Mapped['Users | None'] = relationship(
+        back_populates='assigned_tasks',
+        foreign_keys=[assignee_id],
+        init=False
+        )
+    # TasksComments
+    comments: Mapped[list['TasksComments']] = relationship(
+        back_populates='task',
+        init=False
+        )
+    team: Mapped['Teams'] = relationship(
+        foreign_keys=[team_id],
+        back_populates='tasks',
+        init=False
+    )
+    # Evaluations
+    evaluations: Mapped['Evaluations'] = relationship(
+        back_populates='tasks',
+        init=False
+    )
+
+
+class TasksComments(Base, kw_only=True):
+    __tablename__ = 'tasks_comments'
+
+    task_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey('tasks.id', ondelete='CASCADE')
+    )
+    author_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey('users.id', ondelete='CASCADE')
+    )
+    comment: Mapped[str] = mapped_column(String(2000))
+    created_at: Mapped[datetime] = mapped_column(default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(default=func.now(),
+                                                 onupdate=func.now())
+
+    # ------ RELATIONSHIP ------
+    # Tasks
+    task: Mapped[Tasks] = relationship(
+        back_populates='comments',
+        foreign_keys=[task_id],
+        init=False
+        )
+    # Users
+    author: Mapped['Users'] = relationship(
+        back_populates='tasks_comments',
+        foreign_keys=[author_id],
+        init=False
+        )

@@ -1,0 +1,46 @@
+name: team_management_dev
+
+
+services:
+
+  db:
+    extends:
+      file: base.yaml
+      service: db
+    volumes:
+      - db_data_dev:/var/lib/postgresql/data
+
+  redis:
+    extends:
+      file: base.yaml
+      service: redis
+    volumes:
+      - redis_data_dev:/data
+
+
+  fastapi:
+    extends:
+      file: base.yaml
+      service: fastapi
+    environment:
+      PYTHONUNBUFFERED: 1
+    build:
+      context: .
+      target: "dev"
+    command: sh -c "alembic upgrade head && \
+     uvicorn app.main:application --host 0.0.0.0 --port 8000 --reload"
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/project
+
+
+volumes:
+  db_data_dev:
+  redis_data_dev:
+  rabbitmq_data_dev:
+
+
+networks:
+  app_network:
+    driver: bridge
