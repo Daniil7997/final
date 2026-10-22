@@ -4,7 +4,7 @@ import pytest
 from httpx import AsyncClient
 from fastapi import status
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, update
 
 from app.models.users import Users
 from app.models.teams import Teams
@@ -111,6 +111,41 @@ class TestAddUserToMeeting:
 
         db_meeting_user = await test_session.scalar(stmt)
         assert db_meeting_user is not None
+
+    @pytest.mark.integration
+    @pytest.mark.asyncio
+    async def test_add_user_to_meeting_already_in_meeting(
+        self,
+        async_client: AsyncClient,
+        api_prefix: str,
+        manager_tokens: Tokens,
+        team: Teams,
+        user_member: Users,
+        meeting: Meetings,
+        user_team_member: None,
+        test_session: AsyncSession
+    ):
+        add_user_to_meeting = MeetingsParticipants(
+            user_id=user_member.id,
+            meeting_id=meeting.id
+        )
+        test_session.add(add_user_to_meeting)
+        await test_session.flush()
+        stmt_check = (select(MeetingsParticipants)
+                      .where(MeetingsParticipants.meeting_id == meeting.id,
+                             MeetingsParticipants.user_id == user_member.id))
+        db_meeting_user = await test_session.scalar(stmt_check)
+        assert db_meeting_user is not None
+        assert str(db_meeting_user.user_id) == str(user_member.id)
+
+        response = await async_client.post(
+            url=f'{api_prefix}/teams/{team.id}/meetings/{meeting.id}',
+            json={
+                "user_id": str(user_member.id),
+            },
+            headers={"Authorization": f"Bearer {manager_tokens.access}"}
+        )
+        assert response.status_code == status.HTTP_409_CONFLICT
 
 
 class TestGetMeetings:
