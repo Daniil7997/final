@@ -107,7 +107,6 @@ class TestTokens:
         assert tokens_response.status_code == status.HTTP_200_OK
         tokens = tokens_response.json()
         assert 'access' in tokens
-        assert 'refresh' in tokens
 
     @pytest.mark.integration
     @pytest.mark.asyncio

@@ -62,11 +62,7 @@ class ApplicationSettings(SharedConfig):
 
     @property
     def access_tokens_ttl(self) -> int:
-        return 20 * 60
-
-    @property
-    def refresh_tokens_ttl(self) -> int:
-        return 5 * 24 * 60 * 60
+        return 72 * 60 * 60
 
     @property
     def invite_code_ttl(self) -> int:

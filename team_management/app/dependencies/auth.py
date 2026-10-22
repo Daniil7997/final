@@ -4,8 +4,7 @@ from fastapi.security import (HTTPBearer,
                               HTTPAuthorizationCredentials)
 
 from app.core.security import decode_token
-from app.schemas.auth import (AccessTokensPayload,
-                              RefreshTokensPayload)
+from app.schemas.auth import (AccessTokensPayload)
 from app.schemas.types import IdType, UserRoleType
 from app.core.infrastructure.unit_of_work import UnitOfWork
 from app.services.auth import AuthService
@@ -23,15 +22,6 @@ def verify_access_token(
         ) -> AccessTokensPayload:
     payload = decode_token(token=token.credentials)
     if payload.token_type != 'access':
-        raise InvalidTokenTypeError()
-    return payload
-
-
-def verify_refresh_token(
-        token: HTTPAuthorizationCredentials = Depends(auth_scheme)
-        ) -> RefreshTokensPayload:
-    payload = decode_token(token=token.credentials)
-    if payload.token_type != 'refresh':
         raise InvalidTokenTypeError()
     return payload
 

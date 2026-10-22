@@ -29,7 +29,6 @@ class TokensRequest(BaseModel):
 
 class TokensResponse(BaseModel):
     access: str
-    refresh: str
 
 
 class ChangePasswordRequest(BaseModel):
@@ -48,13 +47,5 @@ class AccessTokensPayload(BaseModel):
     token_type: str
 
 
-class RefreshTokensPayload(BaseModel):
-    sub: IdType
-    iat: int
-    exp: int
-    token_type: str
-
-
 class Tokens(BaseModel):
     access: str
-    refresh: str

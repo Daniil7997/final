@@ -8,7 +8,6 @@ from pwdlib import PasswordHash
 from app.core.config import settings
 
 from app.schemas.auth import (AccessTokensPayload,
-                              RefreshTokensPayload,
                               Tokens)
 from app.schemas.types import UserRoleType
 
@@ -31,7 +30,6 @@ def verify_password(raw_password: str, hash_password: str) -> bool:
 def create_tokens(user_id: uuid.UUID, user_role: UserRoleType) -> Tokens:
     now_unix = int(datetime.now(timezone.utc).timestamp())
     exp_access_unix = settings.app.access_tokens_ttl + now_unix
-    exp_refresh_unix = settings.app.refresh_tokens_ttl + now_unix
 
     json_access_payload = AccessTokensPayload(
         sub=user_id,  # ID пользователя
@@ -41,20 +39,10 @@ def create_tokens(user_id: uuid.UUID, user_role: UserRoleType) -> Tokens:
         token_type="access"  # Тип токена
     ).model_dump(mode='json')
 
-    json_refresh_payload = RefreshTokensPayload(
-        sub=user_id,
-        iat=now_unix,
-        exp=exp_refresh_unix,
-        token_type="refresh"
-    ).model_dump(mode='json')
-
     access_token = jwt.encode(json_access_payload,
                               PRIVATE_KEY,
                               algorithm=TOKEN_ALGORITHM)
-    refresh_token = jwt.encode(json_refresh_payload,
-                               PRIVATE_KEY,
-                               algorithm=TOKEN_ALGORITHM)
-    return Tokens(access=access_token, refresh=refresh_token)
+    return Tokens(access=access_token)
 
 
 def decode_token(token):
@@ -62,8 +50,6 @@ def decode_token(token):
                        key=PRIVATE_KEY,
                        jwt=token)
 
-    if token['token_type'].lower() == 'refresh':
-        result = RefreshTokensPayload(**token)
-    elif token['token_type'].lower() == 'access':
+    if token['token_type'].lower() == 'access':
         result = AccessTokensPayload(**token)
     return result
