@@ -99,8 +99,8 @@ class TasksService(BaseService):
                                   data: CreateTaskCommentRequest) -> None:
         async with self.unit_of_work as uow:
             repo = uow.tasks
-            check = repo.user_and_task_in_team(user_id=actor_id,
-                                               task_id=task_id)
+            check = await repo.user_and_task_in_team(user_id=actor_id,
+                                                     task_id=task_id)
             if not check:
                 raise TaskNotFoundError()
             await repo.create_commment(task_id=task_id,
