@@ -1,3 +1,4 @@
+from app.domain.users.exceptions import UserNotFoundError
 from app.services.base import BaseService
 from app.schemas.teams import (CreateInviteResponse,
                                JoinTeamRequest,
@@ -51,18 +52,17 @@ class TeamsService(BaseService):
             team_id: IdType,
             member_id: IdType,
             actor_role: TeamsRoleType
-            ) -> IdType:
+            ) -> None:
         async with self.unit_of_work as uow:
             user_role = await uow.teams.get_team_role(
                 user_id=member_id,
                 team_id=team_id
             )
+            if user_role is None:
+                raise TeamMemberNotFoundError()
             if actor_role <= user_role:
                 raise LowActorRolePrivilegeError()
-            deleted_id = await uow.teams.remove_team_member(
+            await uow.teams.remove_team_member(
                 member_id=member_id,
                 team_id=team_id
                 )
-            if deleted_id is None:
-                raise TeamMemberNotFoundError()
-            return deleted_id

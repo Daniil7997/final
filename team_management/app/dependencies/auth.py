@@ -12,6 +12,7 @@ from app.core.infrastructure.db.models.teams import TeamsRoles
 from app.dependencies.db import get_unit_of_work
 from app.core.exceptions.auth import (ForbiddenError,
                                       InvalidTokenTypeError)
+from app.domain.teams.exceptions import TeamMembershipRequiredError
 
 
 auth_scheme = HTTPBearer()
@@ -44,9 +45,10 @@ async def team_role_from_db(
         unit_of_work: Annotated[UnitOfWork, Depends(get_unit_of_work)]
 ) -> TeamsRoleType:
     async with unit_of_work as uow:
-        print(f'{team_id=}')
-        print(f'{user_id=}')
-        return await uow.teams.get_team_role(user_id=user_id, team_id=team_id)
+        role = await uow.teams.get_team_role(user_id=user_id, team_id=team_id)
+        if role is None:
+            raise TeamMembershipRequiredError()
+        return role
 
 
 def required_manager_or_higher(
