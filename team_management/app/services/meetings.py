@@ -104,14 +104,10 @@ class MeetingsService(BaseService):
                              actor_id: IdType,
                              team_id: IdType):
         async with self.unit_of_work as uow:
-            check: bool = await uow.meetings.check_meeting_user_in_team(
-                user_id=actor_id,
-                team_id=team_id,
-                meeting_id=meeting_id
-            )
-            if check is False:
-                raise TeamMembershipRequiredError()
-            await uow.meetings.delete_meeting(meeting_id=meeting_id)
+            await uow.meetings.delete_meeting(
+                meeting_id=meeting_id,
+                team_id=team_id
+                )
 
     async def get_team_meetings(
             self,

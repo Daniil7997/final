@@ -500,9 +500,14 @@ class MeetingsRepo(BaseRepo):
             )
             self.session.add(user_in_meeting)
 
-    async def delete_meeting(self, meeting_id: IdType) -> None:
+    async def delete_meeting(
+            self,
+            meeting_id: IdType,
+            team_id: IdType
+            ) -> None:
         stmt = (delete(Meetings)
-                .where(Meetings.id == meeting_id))
+                .where(Meetings.id == meeting_id,
+                       Meetings.team_id == team_id))
         await self.session.execute(stmt)
 
     async def get_list_meetings_by_team_id(
