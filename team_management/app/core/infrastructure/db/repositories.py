@@ -35,15 +35,6 @@ class BaseRepo:
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    def _condition_user_in_team_exists(self,
-                                       user_id: IdType,
-                                       team_id: IdType) -> Exists:
-        user_in_team_exists = exists().where(
-            TeamMembership.team_id == team_id,
-            TeamMembership.user_id == user_id
-            )
-        return user_in_team_exists
-
     def _only_active_users(self, stmt: T_Stmt) -> T_Stmt:
         stmt = stmt.where(Users.is_active == True)  # noqa E712
         return stmt
@@ -276,19 +267,6 @@ class TasksRepo(BaseRepo):
         tasks = result.scalars().all()
         return [TaskSchema.model_validate(t) for t in tasks]
 
-    async def user_and_task_in_team(self,
-                                    user_id: IdType,
-                                    task_id: IdType) -> bool:
-        stmt = select(
-            exists().where(
-                Tasks.id == task_id,
-                Tasks.team_id == TeamMembership.team_id,
-                TeamMembership.user_id == user_id
-                )
-            )
-        result = await self.session.scalar(stmt)
-        return result or False
-
     async def create_commment(self,
                               task_id: IdType,
                               actor_id: IdType,
@@ -353,35 +331,6 @@ class MeetingsRepo(BaseRepo):
         stmt = stmt.where(Meetings.start_meeting >= start_meeting,
                           Meetings.start_meeting <= end_meeting)
         return stmt
-
-    async def check_meeting_user_in_team(self,
-                                         user_id: IdType,
-                                         team_id: IdType,
-                                         meeting_id: IdType
-                                         ) -> bool:
-        """
-        Verify that the user and the meeting belong to the same team_id.
-        """
-        params = {
-            'user_id': user_id,
-            'team_id': team_id,
-            'meeting_id': meeting_id
-        }
-        stmt = text(
-            """
-            SELECT EXISTS (
-            SELECT 1
-            FROM meetings m
-            JOIN teams_membership tm
-                ON tm.team_id = m.team_id
-            WHERE m.id = :meeting_id
-                AND m.team_id = :team_id
-                AND tm.user_id = :user_id
-            )
-            """
-            )
-        result = await self.session.scalar(stmt, params)
-        return bool(result)
 
     async def check_overlap_meetings(self,
                                      user_id: IdType,
