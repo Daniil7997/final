@@ -25,10 +25,6 @@ class MeetingsService(BaseService):
             data: CreateMeetingRequest
             ) -> CreateMeetingsResponse:
         async with self.unit_of_work as uow:
-            actor_in_team = await uow.teams.check_user_in_team(user_id=actor_id,
-                                                               team_id=team_id)
-            if not actor_in_team:
-                raise TeamMembershipRequiredError()
             try:
                 meeting_id = await uow.meetings.create_meeting(
                     description=data.description,
