@@ -154,7 +154,6 @@ class TeamsRepo(BaseRepo):
     async def get_team_membership_by_team_id(
             self,
             team_id: IdType,
-            actor_id: IdType,
             active_members_only: bool = True
             ) -> list[TeamMembershipSchema]:
         stmt = (
@@ -162,8 +161,8 @@ class TeamsRepo(BaseRepo):
                    Users.name,
                    Users.email,
                    TeamMembership.team_role)
-            .join(Users, Users.id == TeamMembership.user_id)
-            .join(Teams, Teams.id == TeamMembership.team_id)
+            .join(TeamMembership, TeamMembership.user_id == Users.id)
+            .join(Teams, TeamMembership.team_id == Teams.id)
             .where(TeamMembership.team_id == team_id)
             )
         if active_members_only:
@@ -174,20 +173,12 @@ class TeamsRepo(BaseRepo):
 
     async def remove_team_member(self,
                                  team_id: IdType,
-                                 member_id: IdType,
-                                 actor_id: IdType) -> IdType | None:
-        actor_in_team = self._condition_user_in_team_exists(user_id=actor_id,
-                                                            team_id=team_id)
+                                 member_id: IdType) -> IdType | None:
         stmt = (delete(TeamMembership)
                 .where(TeamMembership.team_id == team_id,
-                       TeamMembership.user_id == member_id,
-                       actor_in_team)
-                .returning(TeamMembership))
-        result = await self.session.execute(stmt)
-        deleted_obj = result.scalar_one_or_none()
-        if deleted_obj is None:
-            return None
-        return deleted_obj.id
+                       TeamMembership.user_id == member_id)
+                .returning(TeamMembership.user_id))
+        return await self.session.scalar(stmt)
 
     async def change_team_member_role(self,
                                       team_id: IdType,
@@ -198,11 +189,7 @@ class TeamsRepo(BaseRepo):
                        TeamMembership.user_id == member_id,)
                 .values(team_role=new_role)
                 .returning(TeamMembership.id))
-        result = await self.session.execute(stmt)
-        updated_member_id = result.scalar_one_or_none()
-        if updated_member_id is None:
-            return None
-        return member_id
+        return await self.session.scalar(stmt)
 
     async def get_team_role(
             self,

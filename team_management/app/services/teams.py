@@ -1,31 +1,19 @@
-from sqlalchemy.exc import IntegrityError
-
 from app.services.base import BaseService
 from app.schemas.teams import (CreateInviteResponse,
                                JoinTeamRequest,
                                GetMembershipResponse)
-from app.schemas.types import IdType
-from app.schemas.structural import TeamsSchema
+from app.schemas.types import IdType, TeamsRoleType
 from app.core.infrastructure.storage.invite import invite_storage
 from app.core.utils import generate_invite_code
 from app.core.config import settings
-from app.domain.teams.exceptions import (TeamNotFoundError,
-                                         InviteNotFoundError,
-                                         TeamMembershipRequiredError,
-                                         TeamMemberNotFoundError)
+from app.domain.teams.exceptions import (InviteNotFoundError,
+                                         TeamMemberNotFoundError,
+                                         LowActorRolePrivilegeError)
 
 
 class TeamsService(BaseService):
 
-    async def create_invite(self,
-                            user_id: IdType,
-                            team_id: IdType) -> CreateInviteResponse:
-        async with self.unit_of_work as uow:
-            repo = uow.teams
-            user_in_team = await repo.check_user_in_team(user_id=user_id,
-                                                         team_id=team_id)
-            if user_in_team is None:
-                raise TeamNotFoundError()
+    async def create_invite(self, team_id: IdType) -> CreateInviteResponse:
         invite_code = generate_invite_code()
         await invite_storage.set(key=str(invite_code),
                                  value=str(team_id))
@@ -41,24 +29,16 @@ class TeamsService(BaseService):
         if team_id is None:
             raise InviteNotFoundError()
         async with self.unit_of_work as uow:
-            repo = uow.teams
-            await repo.join_team(user_id=user_id, team_id=team_id)
+            await uow.teams.join_team(user_id=user_id, team_id=team_id)
         return IdType(team_id)
 
     async def get_team_membership(
             self,
             team_id: IdType,
-            actor_id: IdType
             ) -> list[GetMembershipResponse]:
         async with self.unit_of_work as uow:
-            repo = uow.teams
-            check = await repo.check_user_in_team(user_id=actor_id,
-                                                  team_id=team_id)
-            if not check:
-                raise TeamMembershipRequiredError()
-            list_users = await repo.get_team_membership_by_team_id(
+            list_users = await uow.teams.get_team_membership_by_team_id(
                 team_id=team_id,
-                actor_id=actor_id
                 )
             users = [
                 GetMembershipResponse.model_validate(user.model_dump())
@@ -66,17 +46,23 @@ class TeamsService(BaseService):
                 ]
             return users
 
-    async def remove_team_member(self,
-                                 team_id: IdType,
-                                 member_id: IdType,
-                                 actor_id: IdType) -> IdType:
+    async def remove_team_member(
+            self,
+            team_id: IdType,
+            member_id: IdType,
+            actor_role: TeamsRoleType
+            ) -> IdType:
         async with self.unit_of_work as uow:
-            repo = uow.teams
-            removed_member_id = await repo.remove_team_member(
+            user_role = await uow.teams.get_team_role(
+                user_id=member_id,
+                team_id=team_id
+            )
+            if actor_role <= user_role:
+                raise LowActorRolePrivilegeError()
+            deleted_id = await uow.teams.remove_team_member(
                 member_id=member_id,
-                actor_id=actor_id,
                 team_id=team_id
                 )
-            if removed_member_id is None:
+            if deleted_id is None:
                 raise TeamMemberNotFoundError()
-            return removed_member_id
+            return deleted_id

@@ -5,7 +5,8 @@ from app.domain.teams.exceptions import (TeamNameAlreadyExistError,
                                          TeamNotFoundError,
                                          InviteNotFoundError,
                                          TeamMembershipRequiredError,
-                                         TeamMemberNotFoundError)
+                                         TeamMemberNotFoundError,
+                                         LowActorRolePrivilegeError)
 
 
 def register_teams_errors_handlers(app: FastAPI) -> None:
@@ -60,6 +61,19 @@ def register_teams_errors_handlers(app: FastAPI) -> None:
         exc: TeamMemberNotFoundError
     ):
         msg = exc.msg or ("Team member not found")
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content={"msg": msg}
+        )
+
+    @app.exception_handler(LowActorRolePrivilegeError)
+    async def handle_low_actor_role_privilege_(
+        request: Request,
+        exc: LowActorRolePrivilegeError
+    ):
+        msg = exc.msg or (
+            "You do not have sufficient permissions for this action."
+            )
         return JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND,
             content={"msg": msg}

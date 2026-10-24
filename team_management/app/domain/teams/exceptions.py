@@ -19,3 +19,7 @@ class TeamMembershipRequiredError(AppException):
 
 class TeamMemberNotFoundError(AppException):
     pass
+
+
+class LowActorRolePrivilegeError(AppException):
+    pass
