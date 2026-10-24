@@ -6,6 +6,7 @@ from sqlalchemy import select
 
 from app.core.infrastructure.db.models.users import Users
 from app.core.infrastructure.db.models.teams import Teams, TeamsRoles
+from app.core.security import create_tokens, hash_password
 from app.schemas.auth import Tokens
 from app.core.infrastructure.storage.invite import invite_storage
 from app.core.config import settings
@@ -57,28 +58,37 @@ class TestJoinTeam:
     async def test_join_team(self,
                              async_client: AsyncClient,
                              api_prefix: str,
-                             member_tokens: Tokens,
-                             user_member: Users,
                              team_invite_code: str,
-                             team: Teams):
-        stmt = (select(TeamMembership)
-                .where(TeamMembership.user_id==user_member.id,
-                       TeamMembership.team_id==team.id))
+                             team: Teams,
+                             test_session: AsyncSession):
+
+        user = Users(
+            name='Artem',
+            email='artem@example.com',
+            password=hash_password(password='MyStrongPass'),
+            is_admin=False,)
+        test_session.add(user)
+        await test_session.flush()
+    
+        user_tokens = create_tokens(user_id=user.id)
+        
+        check_stmt = (select(TeamMembership)
+                      .where(TeamMembership.user_id==user.id,
+                             TeamMembership.team_id==team.id))
+        check_before_join = await test_session.scalar(check_stmt)
+        assert check_before_join is None
 
         response = await async_client.post(
             url=f'{api_prefix}/teams/join',
             json={"invite_code": team_invite_code},
-            headers={"Authorization": f"Bearer {member_tokens.access}"}
+            headers={"Authorization": f"Bearer {user_tokens.access}"}
         )
         assert response.status_code == status.HTTP_200_OK
-        members_response = await async_client.get(
-            url=f'{api_prefix}/teams/{team.id}/members',
-            headers={"Authorization": f"Bearer {member_tokens.access}"}
-        )
-        assert members_response.status_code == status.HTTP_200_OK
-        data = members_response.json()
-        team_member = next(x for x in data if x["email"] == user_member.email)
-        assert team_member
+
+        check_after_join = await test_session.scalar(check_stmt)
+        assert check_after_join is not None
+        assert check_after_join.user_id == user.id
+        assert check_after_join.team_id == team.id
 
 
 class TestRemoveMember:
@@ -89,15 +99,16 @@ class TestRemoveMember:
                                       async_client: AsyncClient,
                                       api_prefix: str,
                                       manager_tokens: Tokens,
-                                      member_tokens: Tokens,
                                       team: Teams,
-                                      user_member: Users):
-
-        members_response_before_rm = await async_client.get(
-            url=f'{api_prefix}/teams/{team.id}/members',
-            headers={"Authorization": f"Bearer {member_tokens.access}"}
-        )
-        assert members_response_before_rm.status_code == status.HTTP_200_OK
+                                      user_member: Users,
+                                      test_session: AsyncSession):
+        check_stmt = (select(TeamMembership)
+                      .where(TeamMembership.team_id==team.id,
+                             TeamMembership.user_id==user_member.id))
+        check_before_rm = await test_session.scalar(check_stmt)
+        assert check_before_rm is not None
+        assert check_before_rm.user_id == user_member.id
+        assert check_before_rm.team_id == team.id
 
         rm_response = await async_client.delete(
             url=f'{api_prefix}/teams/{team.id}/members/{user_member.id}',
@@ -105,11 +116,5 @@ class TestRemoveMember:
         )
         assert rm_response.status_code == status.HTTP_200_OK
 
-        members_response_after_rm = await async_client.get(
-            url=f'{api_prefix}/teams/{team.id}/members',
-            headers={"Authorization": f"Bearer {member_tokens.access}"}
-        )
-        assert (members_response_after_rm.status_code
-                == status.HTTP_403_FORBIDDEN)
-
-
+        check_after_rm = await test_session.scalar(check_stmt)
+        assert check_after_rm is None
