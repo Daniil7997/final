@@ -82,8 +82,7 @@ class UsersRepo(BaseRepo):
         stmt = select(Users).where(Users.id == id)
         if only_active_users:
             stmt = self._only_active_users(stmt=stmt)
-        result = await self.session.execute(stmt)
-        user = result.scalar_one_or_none()
+        user = await self.session.scalar(stmt)
         if user is None:
             return None
         return UsersSchema.model_validate(user)
