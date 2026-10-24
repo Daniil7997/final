@@ -58,14 +58,11 @@ async def add_user_to_meeting(
                status_code=status.HTTP_200_OK)
 async def delete_meeting(
     actor_role: Annotated[TeamsRoleType, Depends(required_manager_or_higher)],
-    actor_id: Annotated[IdType, Depends(id_from_access_token)],
     team_id: Annotated[IdType, Path()],
     meeting_id: Annotated[IdType, Path()],
     service: Annotated[MeetingsService, Depends(meetings_service)]
 ) -> SuccessMessageResponse:
-    await service.delete_meeting(team_id=team_id,
-                                 meeting_id=meeting_id,
-                                 actor_id=actor_id)
+    await service.delete_meeting(team_id=team_id, meeting_id=meeting_id)
     msg = "The meeting has been successfully deleted."
     return SuccessMessageResponse(msg=msg)
 

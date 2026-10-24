@@ -101,7 +101,6 @@ class MeetingsService(BaseService):
 
     async def delete_meeting(self,
                              meeting_id: IdType,
-                             actor_id: IdType,
                              team_id: IdType):
         async with self.unit_of_work as uow:
             await uow.meetings.delete_meeting(

@@ -239,18 +239,12 @@ class TasksRepo(BaseRepo):
 
     async def update_task_by_id(self,
                                 team_id: IdType,
-                                actor_id: IdType,
                                 task_id: IdType,
                                 update_data: dict) -> TaskSchema | None:
-        user_in_team: Exists = self._condition_user_in_team_exists(
-            user_id=actor_id,
-            team_id=team_id
-            )
 
         stmt = (update(Tasks)
                 .where(Tasks.id == task_id,
-                       Tasks.team_id == team_id,
-                       user_in_team)
+                       Tasks.team_id == team_id)
                 .values(update_data)
                 .returning(Tasks))
 

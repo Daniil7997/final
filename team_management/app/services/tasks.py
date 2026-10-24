@@ -40,7 +40,6 @@ class TasksService(BaseService):
             task = await repo.update_task_by_id(
                 update_data=update_data,
                 team_id=team_id,
-                actor_id=actor_id,
                 task_id=task_id
                 )
             if task is None:
@@ -50,17 +49,11 @@ class TasksService(BaseService):
     async def update_task_status(self,
                                  data: ChangeTaskStatusRequest,
                                  team_id: IdType,
-                                 actor_id: IdType,
                                  task_id: IdType) -> ChangeTaskStatusResponse:
         async with self.unit_of_work as uow:
-            repo = uow.tasks
-            update_data = {
-                'status': data.new_status,
-            }
-            task = await repo.update_task_by_id(
-                update_data=update_data,
+            task = await uow.tasks.update_task_by_id(
+                update_data={'status': data.new_status},
                 team_id=team_id,
-                actor_id=actor_id,
                 task_id=task_id
                 )
             if task is None:
