@@ -111,13 +111,9 @@ class MeetingsService(BaseService):
 
     async def get_team_meetings(
             self,
-            team_id: IdType,
-            actor_id: IdType) -> list[GetTeamMeetingsResponse]:
+            team_id: IdType
+            ) -> list[GetTeamMeetingsResponse]:
         async with self.unit_of_work as uow:
-            actor_in_team = await uow.teams.check_user_in_team(user_id=actor_id,
-                                                               team_id=team_id)
-            if not actor_in_team:
-                raise TeamMembershipRequiredError()
             meetings = await uow.meetings.get_list_meetings_by_team_id(team_id)
             result = [GetTeamMeetingsResponse.model_validate(m.model_dump())
                       for m in meetings]

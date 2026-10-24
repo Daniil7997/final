@@ -75,9 +75,7 @@ async def delete_meeting(
             status_code=status.HTTP_200_OK)
 async def get_meetings(
     actor_role: Annotated[TeamsRoleType, Depends(required_manager_or_higher)],
-    actor_id: Annotated[IdType, Depends(id_from_access_token)],
     team_id: Annotated[IdType, Path()],
     service: Annotated[MeetingsService, Depends(meetings_service)]
 ) -> list[GetTeamMeetingsResponse]:
-    return await service.get_team_meetings(team_id=team_id,
-                                           actor_id=actor_id)
+    return await service.get_team_meetings(team_id=team_id)
