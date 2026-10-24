@@ -52,8 +52,16 @@ async def team_role_from_db(
 def required_manager_or_higher(
         team_role: Annotated[TeamsRoleType, Depends(team_role_from_db)]
         ) -> TeamsRoleType:
-    print(f'{team_role=}')
     access_granted = team_role >= TeamsRoles.manager
+    if not access_granted:
+        raise ForbiddenError()
+    return team_role
+
+
+def required_member_or_higher(
+        team_role: Annotated[TeamsRoleType, Depends(team_role_from_db)]
+        ) -> TeamsRoleType:
+    access_granted = team_role >= TeamsRoles.member
     if not access_granted:
         raise ForbiddenError()
     return team_role

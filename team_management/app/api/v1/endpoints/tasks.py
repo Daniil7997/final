@@ -16,6 +16,7 @@ from app.schemas.tasks import (CreateTaskRequest,
                                CreateTaskCommentRequest)
 from app.schemas.common import SuccessMessageResponse
 from app.dependencies.auth import (required_manager_or_higher,
+                                   required_member_or_higher,
                                    id_from_access_token)
 from app.dependencies.tasks import tasks_service
 from app.services.tasks import TasksService
@@ -28,7 +29,7 @@ router = APIRouter(tags=["tasks"])
              status_code=status.HTTP_201_CREATED,
              response_model=SuccessMessageResponse)
 async def create_task(
-    user_role: Annotated[TeamsRoleType, Depends(required_manager_or_higher)],
+    team_role: Annotated[TeamsRoleType, Depends(required_manager_or_higher)],
     team_id: Annotated[IdType, Path()],
     creator_id: Annotated[IdType, Depends(id_from_access_token)],
     data: Annotated[CreateTaskRequest, Body()],
@@ -45,15 +46,13 @@ async def create_task(
             response_model=UpdateTaskResponse,
             status_code=status.HTTP_200_OK)
 async def edit_task_by_id(
-    user_role: Annotated[TeamsRoleType, Depends(required_manager_or_higher)],
+    team_role: Annotated[TeamsRoleType, Depends(required_manager_or_higher)],
     team_id: Annotated[IdType, Path()],
     task_id: Annotated[IdType, Path()],
-    actor_id: Annotated[IdType, Depends(id_from_access_token)],
     data: Annotated[UpdateTaskRequest, Body()],
     service: Annotated[TasksService, Depends(tasks_service)]
 ) -> UpdateTaskResponse:
     return await service.update_task(team_id=team_id,
-                                     actor_id=actor_id,
                                      task_id=task_id,
                                      data=data)
 
@@ -62,14 +61,12 @@ async def edit_task_by_id(
                response_model=SuccessMessageResponse,
                status_code=status.HTTP_200_OK)
 async def delete_task_by_id(
-    user_role: Annotated[TeamsRoleType, Depends(required_manager_or_higher)],
+    team_role: Annotated[TeamsRoleType, Depends(required_manager_or_higher)],
     team_id: Annotated[IdType, Path()],
     task_id: Annotated[IdType, Path()],
-    actor_id: Annotated[IdType, Depends(id_from_access_token)],
     service: Annotated[TasksService, Depends(tasks_service)]
 ) -> SuccessMessageResponse:
     deleted_task_id = await service.delete_task_by_id(team_id=team_id,
-                                                      actor_id=actor_id,
                                                       task_id=task_id)
     msg = f'Successfully deleted task ID{deleted_task_id}'
     return SuccessMessageResponse(msg=msg)
@@ -79,13 +76,12 @@ async def delete_task_by_id(
             response_model=GetTaskResponse,
             status_code=status.HTTP_200_OK)
 async def get_task_by_id(
+    team_role: Annotated[TeamsRoleType, Depends(required_member_or_higher)],
     team_id: Annotated[IdType, Path()],
     task_id: Annotated[IdType, Path()],
-    actor_id: Annotated[IdType, Depends(id_from_access_token)],
     service: Annotated[TasksService, Depends(tasks_service)]
 ) -> GetTaskResponse:
     return await service.get_task_by_task_id(team_id=team_id,
-                                             actor_id=actor_id,
                                              task_id=task_id)
 
 
@@ -93,16 +89,17 @@ async def get_task_by_id(
               response_model=ChangeTaskStatusResponse,
               status_code=status.HTTP_200_OK)
 async def change_task_status_by_id(
+    team_role: Annotated[TeamsRoleType, Depends(required_member_or_higher)],
     team_id: Annotated[IdType, Path()],
     task_id: Annotated[IdType, Path()],
-    actor_id: Annotated[IdType, Depends(id_from_access_token)],
     data: Annotated[ChangeTaskStatusRequest, Body()],
     service: Annotated[TasksService, Depends(tasks_service)]
 ) -> ChangeTaskStatusResponse:
-    return await service.update_task_status(team_id=team_id,
-                                            actor_id=actor_id,
-                                            task_id=task_id,
-                                            data=data)
+    return await service.update_task_status(
+        team_id=team_id,
+        task_id=task_id,
+        data=data
+        )
 
 
 @router.post('/teams/{team_id}/tasks/{task_id}/comments',

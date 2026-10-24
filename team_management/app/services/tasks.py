@@ -29,16 +29,14 @@ class TasksService(BaseService):
     async def update_task(self,
                           data: UpdateTaskRequest,
                           team_id: IdType,
-                          actor_id: IdType,
                           task_id: IdType) -> UpdateTaskResponse:
         async with self.unit_of_work as uow:
-            repo = uow.tasks
-            update_data = {
-                'description': data.description,
-                'due_date': data.due_date
-            }
-            task = await repo.update_task_by_id(
-                update_data=update_data,
+
+            task = await uow.tasks.update_task_by_id(
+                update_data={
+                    'description': data.description,
+                    'due_date': data.due_date,
+                    },
                 team_id=team_id,
                 task_id=task_id
                 )
@@ -62,26 +60,24 @@ class TasksService(BaseService):
 
     async def delete_task_by_id(self,
                                 team_id: IdType,
-                                actor_id: IdType,
                                 task_id: IdType) -> IdType:
         async with self.unit_of_work as uow:
-            repo = uow.tasks
-            deleted_id = await repo.delete_task_by_id(task_id=task_id,
-                                                      actor_id=actor_id,
-                                                      team_id=team_id)
+            deleted_id = await uow.tasks.delete_task_by_id(
+                task_id=task_id,
+                team_id=team_id
+                )
             if deleted_id is None:
                 raise TaskNotFoundError()
             return deleted_id
 
     async def get_task_by_task_id(self,
                                   task_id: IdType,
-                                  team_id: IdType,
-                                  actor_id: IdType):
+                                  team_id: IdType):
         async with self.unit_of_work as uow:
-            repo = uow.tasks
-            task = await repo.get_task_by_task_id(task_id=task_id,
-                                                  team_id=team_id,
-                                                  actor_id=actor_id)
+            task = await uow.tasks.get_task_by_task_id(
+                task_id=task_id,
+                team_id=team_id
+                )
             if task is None:
                 raise TaskNotFoundError()
             return GetTaskResponse.model_validate(task.model_dump())
@@ -91,11 +87,8 @@ class TasksService(BaseService):
                                   actor_id: IdType,
                                   data: CreateTaskCommentRequest) -> None:
         async with self.unit_of_work as uow:
-            repo = uow.tasks
-            check = await repo.user_and_task_in_team(user_id=actor_id,
-                                                     task_id=task_id)
-            if not check:
-                raise TaskNotFoundError()
-            await repo.create_commment(task_id=task_id,
-                                       actor_id=actor_id,
-                                       comment_text=data.comment_text)
+            await uow.tasks.create_commment(
+                task_id=task_id,
+                actor_id=actor_id,
+                comment_text=data.comment_text
+                )

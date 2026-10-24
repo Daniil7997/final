@@ -256,37 +256,20 @@ class TasksRepo(BaseRepo):
 
     async def delete_task_by_id(self,
                                 team_id: IdType,
-                                actor_id: IdType,
                                 task_id: IdType) -> IdType | None:
-        user_in_team: Exists = self._condition_user_in_team_exists(
-            user_id=actor_id,
-            team_id=team_id
-            )
         stmt = (delete(Tasks)
                 .where(Tasks.id == task_id,
-                       Tasks.team_id == team_id,
-                       user_in_team)
+                       Tasks.team_id == team_id)
                 .returning(Tasks.id))
-        result = await self.session.execute(stmt)
-        deleted_id = result.scalar_one_or_none()
-        if deleted_id is None:
-            return None
-        return deleted_id
+        return await self.session.scalar(stmt)
 
     async def get_task_by_task_id(self,
                                   task_id: IdType,
-                                  team_id: IdType,
-                                  actor_id: IdType):
-        user_in_team: Exists = self._condition_user_in_team_exists(
-            user_id=actor_id,
-            team_id=team_id
-            )
+                                  team_id: IdType):
         stmt = (select(Tasks)
                 .where(Tasks.id == task_id,
-                       Tasks.team_id == team_id,
-                       user_in_team))
-        result = await self.session.execute(stmt)
-        task = result.scalar_one_or_none()
+                       Tasks.team_id == team_id))
+        task = await self.session.scalar(stmt)
         if task is None:
             return None
         return TaskSchema.model_validate(task)
