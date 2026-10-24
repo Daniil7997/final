@@ -1,8 +1,10 @@
+from app.core.infrastructure.db.models.tasks import TaskStatus
+from app.schemas.structural import TaskSchema
 from app.services.base import BaseService
 from app.schemas.evaluations import (CreateEvaluationsRequest,
                                      GetAvgEvaluation)
 from app.schemas.types import IdType
-from app.domain.tasks.exceptions import TaskNotFoundError
+from app.domain.tasks.exceptions import TaskNotFoundError, TaskNotDoneError
 from app.domain.evaluations.exceptions import EvaluationsNotFoundError
 
 
@@ -14,17 +16,18 @@ class EvaluationsService(BaseService):
                                 team_id: IdType,
                                 data: CreateEvaluationsRequest):
         async with self.unit_of_work as uow:
-            member_id = await uow.evaluations.get_task_assignee_if_allowed(
-                actor_id=actor_id,
+            task: TaskSchema | None = await uow.evaluations.get_task(
                 task_id=task_id,
                 team_id=team_id
             )
-            if member_id is None:
+            if task is None:
                 raise TaskNotFoundError()
+            if task.status != TaskStatus.done:
+                raise TaskNotDoneError()
             await uow.evaluations.create_evaluation(
                 task_id=task_id,
                 grader_id=actor_id,
-                author_id=member_id,
+                author_id=task.assignee_id,
                 comment=data.comment_text,
                 grade=data.grade
             )

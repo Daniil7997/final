@@ -341,39 +341,19 @@ class TasksRepo(BaseRepo):
 
 class EvaluationsRepo(BaseRepo):
 
-    async def get_task_assignee_if_allowed(self,
-                                           actor_id: IdType,
-                                           task_id: IdType,
-                                           team_id: IdType) -> IdType | None:
-        """
-        Verifies that the task has the status {done}
-        and that the task, actor, and member belong to the same team.
-        """
-        params = {
-            'actor_id': actor_id,
-            'team_id': team_id,
-            'task_id': task_id,
-            'status': 'done'
-        }
-        stmt = text(
-            """
-            SELECT t.assignee_id
-            FROM tasks t
-            WHERE t.id = :task_id
-                AND t.team_id = :team_id
-                AND t.status = :status
-                AND EXISTS (
-                    SELECT 1
-                    FROM teams_membership tm
-                    WHERE tm.team_id = :team_id
-                        AND tm.user_id = :actor_id
-            );
-            """
-            )
-        result = await self.session.scalar(stmt, params)
-        if result is None:
-            return None
-        return result
+    async def get_task(
+            self,
+            task_id: IdType,
+            team_id: IdType
+            ) -> TaskSchema | None:
+
+        stmt = (select(Tasks)
+                .where(Tasks.id==task_id,
+                        Tasks.team_id==team_id,
+                        Tasks.status==TaskStatus.done))
+        task = await self.session.scalar(stmt)
+        if task is None: return None
+        return TaskSchema.model_validate(task)
 
     async def create_evaluation(self,
                                 task_id: IdType,
