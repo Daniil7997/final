@@ -6,13 +6,10 @@ from fastapi import (Body,
                      APIRouter,
                      status)
 
-from app.schemas.teams import (CreateTeamRequest,
-                               CreateTeamResponse,
-                               CreateInviteResponse,
+from app.schemas.teams import (CreateInviteResponse,
                                JoinTeamRequest,
-                               GetMembershipResponse,
-                               ChangeTeamMemberRole)
-from app.schemas.types import IdType, UserRoleType
+                               GetMembershipResponse)
+from app.schemas.types import IdType, TeamsRoleType
 from app.schemas.common import SuccessMessageResponse
 from app.dependencies.auth import (required_manager_or_higher,
                                    id_from_access_token)
@@ -23,23 +20,11 @@ from app.services.teams import TeamsService
 router = APIRouter(tags=["teams"])
 
 
-@router.post('/teams',
-             status_code=status.HTTP_201_CREATED,
-             response_model=CreateTeamResponse)
-async def create_team(
-    user_role: Annotated[UserRoleType, Depends(required_manager_or_higher)],
-    creator_id: Annotated[IdType, Depends(id_from_access_token)],
-    data: Annotated[CreateTeamRequest, Body()],
-    service: Annotated[TeamsService, Depends(teams_service)]
-) -> CreateTeamResponse:
-    return await service.create_team(data=data, creator_id=creator_id)
-
-
 @router.post('/teams/{team_id}/invites',
              status_code=status.HTTP_201_CREATED,
              response_model=CreateInviteResponse)
 async def create_invite_code(
-    user_role: Annotated[UserRoleType, Depends(required_manager_or_higher)],
+    user_role: Annotated[TeamsRoleType, Depends(required_manager_or_higher)],
     team_id: Annotated[IdType, Path],
     user_id: Annotated[IdType, Depends(id_from_access_token)],
     service: Annotated[TeamsService, Depends(teams_service)]
@@ -76,7 +61,7 @@ async def team_members(
                status_code=status.HTTP_200_OK,
                response_model=SuccessMessageResponse)
 async def remove_team_member(
-    actor_role: Annotated[UserRoleType, Depends(required_manager_or_higher)],
+    actor_role: Annotated[TeamsRoleType, Depends(required_manager_or_higher)],
     actor_id: Annotated[IdType, Depends(id_from_access_token)],
     member_id: Annotated[IdType, Path()],
     team_id: Annotated[IdType, Path()],
@@ -86,25 +71,4 @@ async def remove_team_member(
                                                          actor_id=actor_id,
                                                          team_id=team_id)
     msg = (f"Team member with ID {removed_member_id} successfully removed.")
-    return SuccessMessageResponse(msg=msg)
-
-
-@router.patch('/teams/{team_id}/members/{member_id}',
-              status_code=status.HTTP_200_OK,
-              response_model=SuccessMessageResponse)
-async def change_team_member_role(
-    actor_role: Annotated[UserRoleType, Depends(required_manager_or_higher)],
-    actor_id: Annotated[IdType, Depends(id_from_access_token)],
-    member_id: Annotated[IdType, Path()],
-    team_id: Annotated[IdType, Path()],
-    data: Annotated[ChangeTeamMemberRole, Body()],
-    service: Annotated[TeamsService, Depends(teams_service)]
-) -> SuccessMessageResponse:
-    await service.change_team_member_role(
-        member_id=member_id,
-        actor_id=actor_id,
-        team_id=team_id,
-        new_role=data.new_role
-        )
-    msg = (f"Team member with ID {member_id} successfully updated.")
     return SuccessMessageResponse(msg=msg)

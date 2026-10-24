@@ -44,7 +44,7 @@ class AuthService(BaseService):
                                              hash_password=user.password)
             if not check_password:
                 raise PasswordsDontMatchError()
-            tokens = create_tokens(user_id=user.id, user_role=user.user_role)
+            tokens = create_tokens(user_id=user.id)
             return TokensResponse.model_validate(tokens.model_dump())
 
     async def change_password(self,

@@ -1,62 +1,18 @@
-import enum
 import typing
 
 from sqlalchemy.orm import (Mapped,
                             mapped_column,
                             relationship)
-from sqlalchemy import (Enum,
-                        String)
+from sqlalchemy import String
 
-from app.models.base import Base
+from app.core.infrastructure.db.models.base import Base
 
 
 if typing.TYPE_CHECKING:
-    from app.models.teams import TeamMembership
-    from app.models.meetings import Meetings
-    from app.models.tasks import Tasks, TasksComments
-    from app.models.evaluations import Evaluations
-
-
-class UsersRoles(enum.StrEnum):
-    admin = 'admin'
-    manager = 'manager'
-    member = 'member'
-
-    @property
-    def access_level(self) -> int:
-        """Assigns a numeric access level to each string role."""
-        levels = {
-            UsersRoles.admin: 3,
-            UsersRoles.manager: 2,
-            UsersRoles.member: 1
-        }
-        return levels[self]
-
-    def __ge__(self, other) -> bool:
-        if not isinstance(other, UsersRoles):
-            return NotImplemented
-        return self.access_level >= other.access_level
-
-    def __gt__(self, other) -> bool:
-        if not isinstance(other, UsersRoles):
-            return NotImplemented
-        return self.access_level > other.access_level
-
-    def __le__(self, other) -> bool:
-        if not isinstance(other, UsersRoles):
-            return NotImplemented
-        return self.access_level <= other.access_level
-
-    def __lt__(self, other) -> bool:
-        if not isinstance(other, UsersRoles):
-            return NotImplemented
-        return self.access_level < other.access_level
-
-    def __str__(self):
-        return self.value
-
-    def __repr__(self):
-        return self.value
+    from app.core.infrastructure.db.models.teams import TeamMembership
+    from app.core.infrastructure.db.models.meetings import Meetings
+    from app.core.infrastructure.db.models.tasks import Tasks, TasksComments
+    from app.core.infrastructure.db.models.evaluations import Evaluations
 
 
 class Users(Base):
@@ -68,15 +24,12 @@ class Users(Base):
                                        nullable=False)
     password: Mapped[str] = mapped_column(String(255),
                                           nullable=False)
-
+    is_admin: Mapped[bool] = mapped_column(default=False,
+                                           nullable=False,
+                                           init=True)
     is_active: Mapped[bool] = mapped_column(default=True,
                                             nullable=False,
                                             init=False)
-    user_role: Mapped[UsersRoles] = mapped_column(
-        Enum(UsersRoles, native_enum=False),
-        default=UsersRoles.member,
-        nullable=False
-        )
 
     # ------ RELATIONSHIP ------
     # Teams

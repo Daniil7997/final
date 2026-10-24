@@ -13,6 +13,7 @@ class CreateMeetingRequest(BaseModel):
     description: MeetingsDescriptionType
     start_meeting: dt.datetime
     end_meeting: dt.datetime
+    user_id: list[IdType] | IdType | None = None
 
 
 class CreateMeetingsResponse(BaseModel):
@@ -20,7 +21,7 @@ class CreateMeetingsResponse(BaseModel):
 
 
 class AddUserToMeetingRequest(BaseModel):
-    user_id: IdType
+    user_id: list[IdType] | IdType
 
 
 class GetTeamMeetingsResponse(BaseModel):

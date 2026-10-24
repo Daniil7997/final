@@ -1,4 +1,4 @@
-from datetime import timedelta, datetime
+from datetime import timedelta, datetime, timezone
 
 import pytest
 from httpx import AsyncClient
@@ -6,10 +6,10 @@ from fastapi import status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update
 
-from app.models.users import Users
-from app.models.teams import Teams
+from app.core.infrastructure.db.models.users import Users
+from app.core.infrastructure.db.models.teams import Teams
 from app.schemas.auth import Tokens
-from app.models.meetings import Meetings, MeetingsParticipants
+from app.core.infrastructure.db.models.meetings import Meetings, MeetingsParticipants
 
 
 class TestCreateMeeting:
@@ -27,7 +27,7 @@ class TestCreateMeeting:
         db_meeting = await test_session.scalar(stmt)
         assert db_meeting is None
 
-        start_meeting = datetime.now() + timedelta(days=1, hours=2)
+        start_meeting = datetime.now(timezone.utc) + timedelta(days=1, hours=2)
         end_meeting = start_meeting + timedelta(hours=1)
         description = "do something"
 
@@ -63,7 +63,7 @@ class TestCreateMeeting:
         db_meeting = await test_session.scalar(stmt)
         assert db_meeting is None
 
-        start_meeting = datetime.now() + timedelta(days=1, hours=2)
+        start_meeting = datetime.now(timezone.utc) + timedelta(days=1, hours=2)
         end_meeting = start_meeting - timedelta(hours=1)
         description = "do something"
 
@@ -91,7 +91,6 @@ class TestAddUserToMeeting:
         team: Teams,
         user_member: Users,
         meeting: Meetings,
-        user_team_member: None,
         test_session: AsyncSession
     ):
         stmt = (select(MeetingsParticipants)
@@ -122,7 +121,6 @@ class TestAddUserToMeeting:
         team: Teams,
         user_member: Users,
         meeting: Meetings,
-        user_team_member: None,
         test_session: AsyncSession
     ):
         add_user_to_meeting = MeetingsParticipants(
@@ -168,10 +166,12 @@ class TestGetMeetings:
         data = response.json()
         assert isinstance(data, list)
         obj = data[0]
+        api_start_meeting = datetime.fromisoformat(obj['start_meeting'])
+        api_end_meeting = datetime.fromisoformat(obj['end_meeting'])
         assert str(obj['id']) == str(meeting.id)
         assert obj['description'] == meeting.description
-        assert obj['start_meeting'] == meeting.start_meeting.isoformat()
-        assert obj['end_meeting'] == meeting.end_meeting.isoformat()
+        assert api_start_meeting == meeting.start_meeting
+        assert api_end_meeting == meeting.end_meeting
 
 
 class TestDeleteMeeting:

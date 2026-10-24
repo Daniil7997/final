@@ -3,7 +3,8 @@ from fastapi.responses import JSONResponse
 
 from app.domain.meetings.exceptions import (MeetingsOverlapError,
                                             InvalidMeetingTimeRangeError,
-                                            MeetingNotFoundError)
+                                            MeetingNotFoundError,
+                                            UserAlreadyInMeetingError)
 
 
 def register_meetings_errors_handlers(app: FastAPI) -> None:
@@ -40,5 +41,16 @@ def register_meetings_errors_handlers(app: FastAPI) -> None:
         msg = exc.msg or "Meeting not found"
         return JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND,
+            content={"msg": msg}
+        )
+
+    @app.exception_handler(UserAlreadyInMeetingError)
+    async def handle_user_already_in_meeting(
+        request: Request,
+        exc: UserAlreadyInMeetingError
+    ) -> JSONResponse:
+        msg = exc.msg or "The user is already in this meeting."
+        return JSONResponse(
+            status_code=status.HTTP_409_CONFLICT,
             content={"msg": msg}
         )

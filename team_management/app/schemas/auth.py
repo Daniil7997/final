@@ -3,7 +3,6 @@ from pydantic import BaseModel
 from app.schemas.types import (UserNameType,
                                PasswordType,
                                EmailType,
-                               UserRoleType,
                                IdType)
 
 
@@ -43,7 +42,6 @@ class AccessTokensPayload(BaseModel):
     sub: IdType
     iat: int
     exp: int
-    user_role: UserRoleType
     token_type: str
 
 

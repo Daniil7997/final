@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.repositories import (UsersRepo,
+from app.core.infrastructure.db.repositories import (UsersRepo,
                               TeamsRepo,
                               TasksRepo,
                               EvaluationsRepo,

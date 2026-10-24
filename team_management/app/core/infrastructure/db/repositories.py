@@ -14,18 +14,18 @@ from sqlalchemy import (exists,
 from sqlalchemy.sql import func
 from sqlalchemy.dialects.postgresql import insert
 
-from app.models.users import Users
-from app.models.teams import Teams, TeamMembership
-from app.models.tasks import Tasks, TasksComments, TaskStatus
-from app.models.evaluations import Evaluations
-from app.models.meetings import Meetings, MeetingsParticipants
+from app.core.infrastructure.db.models.users import Users
+from app.core.infrastructure.db.models.teams import Teams, TeamMembership, TeamsRoles
+from app.core.infrastructure.db.models.tasks import Tasks, TasksComments, TaskStatus
+from app.core.infrastructure.db.models.evaluations import Evaluations
+from app.core.infrastructure.db.models.meetings import Meetings, MeetingsParticipants
 
 from app.schemas.structural import (UsersSchema,
                                     TeamsSchema,
                                     TaskSchema,
                                     TeamMembershipSchema,
                                     MeetingsSchema)
-from app.schemas.types import IdType
+from app.schemas.types import IdType, TeamsRoleType
 
 
 T_Stmt = typing.TypeVar("T_Stmt", Select, Update, Delete)
@@ -104,19 +104,28 @@ class UsersRepo(BaseRepo):
         user = result.scalar_one_or_none()
         return UsersSchema.model_validate(user)
 
+    async def check_is_admin(self, user_id: IdType) -> bool | None:
+        stmt = (select(Users.is_admin)
+                .where(Users.id==user_id))
+        is_admin = await self.session.scalar(stmt)
+        return is_admin
+
 
 class TeamsRepo(BaseRepo):
 
     async def create_team(self,
                           name: str,
-                          creator_id: IdType,
+                          manager_id: IdType,
                           description: str | None = None) -> TeamsSchema:
         team = Teams(name=name, description=description)
+        """only for admins"""
         self.session.add(team)
         await self.session.flush()
-        membership = TeamMembership(user_id=creator_id,
-                                    team_id=team.id,
-                                    team_role='creator')
+        membership = TeamMembership(
+            user_id=manager_id,
+            team_id=team.id,
+            team_role=TeamsRoles.manager
+            )
         self.session.add(membership)
         return TeamsSchema.model_validate(team)
 
@@ -152,7 +161,6 @@ class TeamsRepo(BaseRepo):
             select(Users.id,
                    Users.name,
                    Users.email,
-                   Users.user_role,
                    TeamMembership.team_role)
             .join(Users, Users.id == TeamMembership.user_id)
             .join(Teams, Teams.id == TeamMembership.team_id)
@@ -183,15 +191,11 @@ class TeamsRepo(BaseRepo):
 
     async def change_team_member_role(self,
                                       team_id: IdType,
-                                      actor_id: IdType,
                                       member_id: IdType,
                                       new_role: str) -> IdType | None:
-        actor_in_team = self._condition_user_in_team_exists(user_id=actor_id,
-                                                            team_id=team_id)
         stmt = (update(TeamMembership)
                 .where(TeamMembership.team_id == team_id,
-                       TeamMembership.user_id == member_id,
-                       actor_in_team)
+                       TeamMembership.user_id == member_id,)
                 .values(team_role=new_role)
                 .returning(TeamMembership.id))
         result = await self.session.execute(stmt)
@@ -199,6 +203,16 @@ class TeamsRepo(BaseRepo):
         if updated_member_id is None:
             return None
         return member_id
+
+    async def get_team_role(
+            self,
+            user_id: IdType,
+            team_id: IdType
+            ) -> TeamsRoleType | None:
+        stmt = (select(TeamMembership.team_role)
+                .where(TeamMembership.user_id==user_id,
+                       TeamMembership.team_id==team_id))
+        return await self.session.scalar(stmt)
 
 
 class TasksRepo(BaseRepo):
@@ -490,13 +504,21 @@ class MeetingsRepo(BaseRepo):
         return meeting_obj.id
 
     async def join_meeting(self,
-                           user_id: IdType,
+                           user_id: list[IdType] | tuple[IdType] | IdType,
                            meeting_id: IdType) -> None:
-        user_in_meeting = MeetingsParticipants(
-            user_id=user_id,
-            meeting_id=meeting_id
-        )
-        self.session.add(user_in_meeting)
+        if isinstance(user_id, (list, tuple)):
+            for u_id in user_id:
+                user_in_meeting = MeetingsParticipants(
+                    user_id=u_id,
+                    meeting_id=meeting_id
+                )
+                self.session.add(user_in_meeting)
+        else:
+            user_in_meeting = MeetingsParticipants(
+                user_id=user_id,
+                meeting_id=meeting_id
+            )
+            self.session.add(user_in_meeting)
 
     async def delete_meeting(self, meeting_id: IdType) -> None:
         stmt = (delete(Meetings)

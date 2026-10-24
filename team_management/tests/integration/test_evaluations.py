@@ -6,11 +6,11 @@ from fastapi import status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, update
 
-from app.models.users import Users
-from app.models.teams import Teams
-from app.models.tasks import Tasks, TaskStatus
+from app.core.infrastructure.db.models.users import Users
+from app.core.infrastructure.db.models.teams import Teams
+from app.core.infrastructure.db.models.tasks import Tasks, TaskStatus
 from app.schemas.auth import Tokens
-from app.models.evaluations import Evaluations
+from app.core.infrastructure.db.models.evaluations import Evaluations
 
 
 class TestCreateEvaluation:

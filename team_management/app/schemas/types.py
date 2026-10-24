@@ -2,8 +2,8 @@ from typing import Annotated, Optional
 import uuid
 
 from pydantic import Field, EmailStr
-from app.models.users import UsersRoles
-from app.models.tasks import TaskStatus
+from app.core.infrastructure.db.models.tasks import TaskStatus
+from app.core.infrastructure.db.models.teams import TeamsRoles
 
 
 IdType = uuid.UUID
@@ -12,11 +12,11 @@ IdType = uuid.UUID
 UserNameType = Annotated[str, Field(max_length=50)]
 PasswordType = Annotated[str, Field(max_length=30)]
 EmailType = Annotated[EmailStr, Field(max_length=50)]
-UserRoleType = UsersRoles
 
 # TEAMS
 TeamNameType = Annotated[str, Field(max_length=100)]
 TeamDescriptionType = Annotated[Optional[str], Field(max_length=1000)]
+TeamsRoleType = TeamsRoles
 
 # TASKS
 TaskDescriptionType = Annotated[str, Field(max_length=5000)]

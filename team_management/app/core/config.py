@@ -59,6 +59,7 @@ class RedisSettings(SharedConfig):
 
 class ApplicationSettings(SharedConfig):
     PRIVATE_KEY_HEX: str
+    hashed_admin_password: str
 
     @property
     def access_tokens_ttl(self) -> int:

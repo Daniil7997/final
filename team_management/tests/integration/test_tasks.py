@@ -6,9 +6,9 @@ from fastapi import status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
-from app.models.users import Users
-from app.models.teams import Teams
-from app.models.tasks import Tasks, TasksComments, TaskStatus
+from app.core.infrastructure.db.models.users import Users
+from app.core.infrastructure.db.models.teams import Teams
+from app.core.infrastructure.db.models.tasks import Tasks, TasksComments, TaskStatus
 from app.schemas.auth import Tokens
 
 
@@ -185,8 +185,7 @@ class TestGetTask:
         api_prefix: str,
         member_tokens: Tokens,
         team: Teams,
-        task: Tasks,
-        user_team_member: None,
+        task: Tasks
     ):
 
         response = await async_client.get(

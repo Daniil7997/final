@@ -6,10 +6,14 @@ from app.schemas.meetings import (CreateMeetingRequest,
                                   AddUserToMeetingRequest,
                                   GetTeamMeetingsResponse)
 from app.schemas.types import IdType
-from app.domain.teams.exceptions import TeamMembershipRequiredError
+from app.domain.teams.exceptions import (TeamMembershipRequiredError,
+                                         TeamNotFoundError)
 from app.domain.meetings.exceptions import (MeetingsOverlapError,
                                             InvalidMeetingTimeRangeError,
-                                            MeetingNotFoundError)
+                                            MeetingNotFoundError,
+                                            UserAlreadyInMeetingError)
+from app.domain.users.exceptions import UserNotFoundError
+from app.core.infrastructure.db.codes import DBIntegrityState
 
 
 class MeetingsService(BaseService):
@@ -32,9 +36,32 @@ class MeetingsService(BaseService):
                     end_meeting=data.end_meeting,
                     team_id=team_id
                 )
-            except IntegrityError:
-                raise InvalidMeetingTimeRangeError()
+            except IntegrityError as e:
+                sqlstate = getattr(e.orig, 'sqlstate', None)
+
+                if sqlstate == DBIntegrityState.FOREIGN_KEY_VIOLATION:
+                    raise TeamNotFoundError()
+
+                elif sqlstate == DBIntegrityState.CHECK_VIOLATION:
+                    raise InvalidMeetingTimeRangeError()
+            if data.user_id is None:
+                return CreateMeetingsResponse(meeting_id=meeting_id)
+            try:
+                await uow.meetings.join_meeting(
+                    user_id=data.user_id,
+                    meeting_id=meeting_id
+                    )
+            except IntegrityError as e:
+                sqlstate = getattr(e.orig, 'sqlstate', None)
+
+                if sqlstate == DBIntegrityState.FOREIGN_KEY_VIOLATION:
+                    raise UserNotFoundError()
+
+                elif sqlstate == DBIntegrityState.CHECK_VIOLATION:
+                    raise MeetingsOverlapError()
+
             return CreateMeetingsResponse(meeting_id=meeting_id)
+
 
     async def add_user_to_meeting(
             self,
@@ -62,10 +89,19 @@ class MeetingsService(BaseService):
                 end_meeting=meeting_data.end_meeting)
             if overlap:
                 raise MeetingsOverlapError()
-            await uow.meetings.join_meeting(
-                user_id=data.user_id,
-                meeting_id=meeting_id
-                )
+            try:
+                await uow.meetings.join_meeting(
+                    user_id=data.user_id,
+                    meeting_id=meeting_id
+                    )
+            except IntegrityError as e:
+                sqlstate = getattr(e.orig, 'sqlstate', None)
+
+                if sqlstate == DBIntegrityState.UNIQUE_VIOLATION:
+                    raise UserAlreadyInMeetingError()
+
+                elif sqlstate == DBIntegrityState.CHECK_VIOLATION:
+                    raise MeetingsOverlapError()
 
     async def delete_meeting(self,
                              meeting_id: IdType,

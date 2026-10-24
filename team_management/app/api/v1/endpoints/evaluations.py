@@ -8,7 +8,7 @@ from fastapi import (Body,
 
 from app.schemas.evaluations import (CreateEvaluationsRequest,
                                      GetAvgEvaluation)
-from app.schemas.types import IdType, UserRoleType
+from app.schemas.types import IdType, TeamsRoleType
 from app.schemas.common import SuccessMessageResponse
 from app.dependencies.auth import (required_manager_or_higher,
                                    id_from_access_token)
@@ -22,7 +22,7 @@ router = APIRouter(tags=["evaluations"])
 @router.post('/teams/{team_id}/tasks/{task_id}/evaluations',
              status_code=status.HTTP_201_CREATED)
 async def rate_task(
-    actor_role: Annotated[UserRoleType, Depends(required_manager_or_higher)],
+    actor_role: Annotated[TeamsRoleType, Depends(required_manager_or_higher)],
     actor_id: Annotated[IdType, Depends(id_from_access_token)],
     task_id: Annotated[IdType, Path()],
     team_id: Annotated[IdType, Path()],

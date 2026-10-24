@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import Depends
 
 from app.core.infrastructure.unit_of_work import UnitOfWork
-from app.database import async_session_factory
+from app.core.infrastructure.db.connection import async_session_factory
 
 
 async def get_sedssion() -> AsyncGenerator[AsyncSession, None]:

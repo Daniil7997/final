@@ -1,14 +1,14 @@
-from datetime import date, timedelta, datetime
+from datetime import date, timedelta, datetime, timezone
 
 import pytest
 from httpx import AsyncClient
 from fastapi import status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.users import Users
-from app.models.teams import Teams
-from app.models.tasks import Tasks
-from app.models.meetings import Meetings, MeetingsParticipants
+from app.core.infrastructure.db.models.users import Users
+from app.core.infrastructure.db.models.teams import Teams
+from app.core.infrastructure.db.models.tasks import Tasks
+from app.core.infrastructure.db.models.meetings import Meetings, MeetingsParticipants
 from app.schemas.auth import Tokens
 from app.schemas.structural import TaskSchema, MeetingsSchema
 
@@ -24,7 +24,6 @@ class TestGetCalendar:
                                 user_manager: Users,
                                 user_member: Users,
                                 team: Teams,
-                                user_team_member: None,
                                 test_session: AsyncSession):
         due_date = date.today() + timedelta(days=2)
         task = Tasks(creator_id=user_manager.id,
@@ -32,7 +31,7 @@ class TestGetCalendar:
                      description='some_text',
                      team_id=team.id,
                      assignee_id=user_member.id)
-        start_meeting = datetime.now() + timedelta(days=1, hours=2)
+        start_meeting = datetime.now(timezone.utc) + timedelta(days=1, hours=2)
         end_meeting = start_meeting + timedelta(hours=1)
         meeting = Meetings(
             description="some text",

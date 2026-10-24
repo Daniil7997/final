@@ -11,3 +11,8 @@ class InvalidMeetingTimeRangeError(AppException):
 
 class MeetingNotFoundError(AppException):
     pass
+
+
+class UserAlreadyInMeetingError(AppException):
+    pass
+

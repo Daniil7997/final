@@ -1,18 +1,59 @@
 import typing
 import uuid
+import enum
 
 from sqlalchemy.orm import (Mapped,
                             mapped_column,
                             relationship)
-from sqlalchemy import UUID, ForeignKey, String, UniqueConstraint
+from sqlalchemy import UUID, ForeignKey, String, UniqueConstraint, Enum
 
-from app.models.base import Base
+from app.core.infrastructure.db.models.base import Base
 
 
 if typing.TYPE_CHECKING:
-    from app.models.users import Users
-    from app.models.tasks import Tasks
-    from app.models.meetings import Meetings
+    from app.core.infrastructure.db.models.users import Users
+    from app.core.infrastructure.db.models.tasks import Tasks
+    from app.core.infrastructure.db.models.meetings import Meetings
+
+
+class TeamsRoles(enum.StrEnum):
+    manager = 'manager'
+    member = 'member'
+
+    @property
+    def access_level(self) -> int:
+        """Assigns a numeric access level to each string role."""
+        levels = {
+            TeamsRoles.manager: 2,
+            TeamsRoles.member: 1
+        }
+        return levels[self]
+
+    def __ge__(self, other) -> bool:
+        if not isinstance(other, TeamsRoles):
+            return NotImplemented
+        return self.access_level >= other.access_level
+
+    def __gt__(self, other) -> bool:
+        if not isinstance(other, TeamsRoles):
+            return NotImplemented
+        return self.access_level > other.access_level
+
+    def __le__(self, other) -> bool:
+        if not isinstance(other, TeamsRoles):
+            return NotImplemented
+        return self.access_level <= other.access_level
+
+    def __lt__(self, other) -> bool:
+        if not isinstance(other, TeamsRoles):
+            return NotImplemented
+        return self.access_level < other.access_level
+
+    def __str__(self):
+        return self.value
+
+    def __repr__(self):
+        return self.value
 
 
 class Teams(Base):
@@ -45,8 +86,11 @@ class Teams(Base):
 class TeamMembership(Base, kw_only=True):
     __tablename__ = 'teams_membership'
 
-    team_role: Mapped[str | None] = mapped_column(String(100),
-                                                  default='intern')
+    team_role: Mapped[TeamsRoles] = mapped_column(
+        Enum(TeamsRoles, native_enum=True),
+        default=TeamsRoles.member,
+        nullable=False
+        )
 
     # ------ ForeignKey ------
     user_id: Mapped[uuid.UUID] = mapped_column(

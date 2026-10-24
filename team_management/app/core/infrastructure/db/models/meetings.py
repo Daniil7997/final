@@ -5,15 +5,15 @@ import typing
 from sqlalchemy.orm import (Mapped,
                             mapped_column,
                             relationship)
-from sqlalchemy import (CheckConstraint, ForeignKey,
+from sqlalchemy import (CheckConstraint, DateTime, ForeignKey,
                         String, UniqueConstraint)
 
-from app.models.base import Base
+from app.core.infrastructure.db.models.base import Base
 
 
 if typing.TYPE_CHECKING:
-    from app.models.users import Users
-    from app.models.teams import Teams
+    from app.core.infrastructure.db.models.users import Users
+    from app.core.infrastructure.db.models.teams import Teams
 
 
 class MeetingsParticipants(Base):
@@ -39,8 +39,8 @@ class Meetings(Base, kw_only=True):
                                                     nullable=True,
                                                     default=None)
 
-    start_meeting: Mapped[datetime]
-    end_meeting: Mapped[datetime]
+    start_meeting: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    end_meeting: Mapped[datetime] = mapped_column(DateTime(timezone=True))
 
     # ----- FOREIGNKEY -----
     team_id: Mapped[uuid.UUID] = mapped_column(

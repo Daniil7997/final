@@ -10,7 +10,7 @@ from app.schemas.meetings import (CreateMeetingRequest,
                                   CreateMeetingsResponse,
                                   AddUserToMeetingRequest,
                                   GetTeamMeetingsResponse)
-from app.schemas.types import IdType, UserRoleType
+from app.schemas.types import IdType, TeamsRoleType
 from app.schemas.common import SuccessMessageResponse
 from app.dependencies.auth import (required_manager_or_higher,
                                    id_from_access_token)
@@ -25,7 +25,7 @@ router = APIRouter(tags=["meetings"])
              response_model=CreateMeetingsResponse,
              status_code=status.HTTP_201_CREATED)
 async def create_meeting(
-    actor_role: Annotated[UserRoleType, Depends(required_manager_or_higher)],
+    actor_role: Annotated[TeamsRoleType, Depends(required_manager_or_higher)],
     actor_id: Annotated[IdType, Depends(id_from_access_token)],
     team_id: Annotated[IdType, Path()],
     data: Annotated[CreateMeetingRequest, Body()],
@@ -40,7 +40,7 @@ async def create_meeting(
              response_model=SuccessMessageResponse,
              status_code=status.HTTP_201_CREATED)
 async def add_user_to_meeting(
-    actor_role: Annotated[UserRoleType, Depends(required_manager_or_higher)],
+    actor_role: Annotated[TeamsRoleType, Depends(required_manager_or_higher)],
     team_id: Annotated[IdType, Path()],
     meeting_id: Annotated[IdType, Path()],
     data: Annotated[AddUserToMeetingRequest, Body()],
@@ -57,7 +57,7 @@ async def add_user_to_meeting(
                response_model=SuccessMessageResponse,
                status_code=status.HTTP_200_OK)
 async def delete_meeting(
-    actor_role: Annotated[UserRoleType, Depends(required_manager_or_higher)],
+    actor_role: Annotated[TeamsRoleType, Depends(required_manager_or_higher)],
     actor_id: Annotated[IdType, Depends(id_from_access_token)],
     team_id: Annotated[IdType, Path()],
     meeting_id: Annotated[IdType, Path()],
@@ -74,7 +74,7 @@ async def delete_meeting(
             response_model=list[GetTeamMeetingsResponse],
             status_code=status.HTTP_200_OK)
 async def get_meetings(
-    actor_role: Annotated[UserRoleType, Depends(required_manager_or_higher)],
+    actor_role: Annotated[TeamsRoleType, Depends(required_manager_or_higher)],
     actor_id: Annotated[IdType, Depends(id_from_access_token)],
     team_id: Annotated[IdType, Path()],
     service: Annotated[MeetingsService, Depends(meetings_service)]

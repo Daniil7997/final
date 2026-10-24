@@ -1,8 +1,6 @@
 from pydantic import BaseModel
 
-from app.schemas.types import (UserNameType,
-                               EmailType,
-                               UserRoleType)
+from app.schemas.types import UserNameType, EmailType
 
 
 # ======================================================
@@ -11,4 +9,3 @@ from app.schemas.types import (UserNameType,
 class GetProfileResponse(BaseModel):
     name: UserNameType
     email: EmailType
-    user_role: UserRoleType

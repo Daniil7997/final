@@ -9,11 +9,18 @@ from sqlalchemy import (select,
 from sqlalchemy.sql import func
 from sqlalchemy.dialects.postgresql import insert
 
-from app.models.users import Users, UsersRoles
-from app.models.teams import Teams, TeamMembership
-from app.models.tasks import Tasks, TasksComments
-from app.models.evaluations import Evaluations
-from app.models.meetings import Meetings, MeetingsParticipants
+from app.core.infrastructure.db.models.users import Users
+from app.core.infrastructure.db.models.teams import (
+    Teams,
+    TeamMembership,
+    TeamsRoles
+    )
+from app.core.infrastructure.db.models.tasks import Tasks, TasksComments
+from app.core.infrastructure.db.models.evaluations import Evaluations
+from app.core.infrastructure.db.models.meetings import (
+    Meetings,
+    MeetingsParticipants
+    )
 
 from app.schemas.types import IdType
 
@@ -32,11 +39,11 @@ class UsersFactory(BaseFactory):
                           name: str,
                           email: str,
                           hashed_password: str,
-                          role: UsersRoles = UsersRoles.member) -> Users:
+                          is_admin: bool = False) -> Users:
         user = Users(name=name,
                      email=email,
                      password=hashed_password,
-                     user_role=role)
+                     is_admin=is_admin)
         self.session.add(user)
         await self.session.flush()
         self.session.expunge(user)
@@ -47,14 +54,14 @@ class TeamsFactory(BaseFactory):
 
     async def create_team(self,
                           name: str,
-                          creator_id: IdType,
+                          manager_id: IdType,
                           description: str | None = None) -> Teams:
         team = Teams(name=name, description=description)
         self.session.add(team)
         await self.session.flush()
-        membership = TeamMembership(user_id=creator_id,
+        membership = TeamMembership(user_id=manager_id,
                                     team_id=team.id,
-                                    team_role='creator')
+                                    team_role=TeamsRoles.manager)
         self.session.add(membership)
         await self.session.flush()
         self.session.expunge(team)
@@ -62,7 +69,9 @@ class TeamsFactory(BaseFactory):
 
     async def join_team(self, team_id: IdType, user_id: IdType) -> None:
         stmt = (insert(TeamMembership)
-                .values(team_id=team_id, user_id=user_id, team_role='intern')
+                .values(team_id=team_id,
+                        user_id=user_id,
+                        team_role=TeamsRoles.member)
                 .on_conflict_do_nothing())
         await self.session.execute(stmt)
         await self.session.flush()

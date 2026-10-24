@@ -9,7 +9,6 @@ from app.core.config import settings
 
 from app.schemas.auth import (AccessTokensPayload,
                               Tokens)
-from app.schemas.types import UserRoleType
 
 
 private_key_bytes = bytes.fromhex(settings.app.PRIVATE_KEY_HEX)
@@ -27,7 +26,7 @@ def verify_password(raw_password: str, hash_password: str) -> bool:
     return HASH_ALGORITHM.verify(raw_password, hash_password)
 
 
-def create_tokens(user_id: uuid.UUID, user_role: UserRoleType) -> Tokens:
+def create_tokens(user_id: uuid.UUID) -> Tokens:
     now_unix = int(datetime.now(timezone.utc).timestamp())
     exp_access_unix = settings.app.access_tokens_ttl + now_unix
 
@@ -35,7 +34,6 @@ def create_tokens(user_id: uuid.UUID, user_role: UserRoleType) -> Tokens:
         sub=user_id,  # ID пользователя
         iat=now_unix,  # Время создания
         exp=exp_access_unix,  # Время действия
-        user_role=user_role,  # Роль пользователя
         token_type="access"  # Тип токена
     ).model_dump(mode='json')
 

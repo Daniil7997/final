@@ -1,9 +1,7 @@
 from sqlalchemy.exc import IntegrityError
 
 from app.services.base import BaseService
-from app.schemas.teams import (CreateTeamRequest,
-                               CreateTeamResponse,
-                               CreateInviteResponse,
+from app.schemas.teams import (CreateInviteResponse,
                                JoinTeamRequest,
                                GetMembershipResponse)
 from app.schemas.types import IdType
@@ -11,29 +9,13 @@ from app.schemas.structural import TeamsSchema
 from app.core.infrastructure.storage.invite import invite_storage
 from app.core.utils import generate_invite_code
 from app.core.config import settings
-from app.domain.teams.exceptions import (TeamNameAlreadyExistError,
-                                         TeamNotFoundError,
+from app.domain.teams.exceptions import (TeamNotFoundError,
                                          InviteNotFoundError,
                                          TeamMembershipRequiredError,
                                          TeamMemberNotFoundError)
 
 
 class TeamsService(BaseService):
-
-    async def create_team(self,
-                          data: CreateTeamRequest,
-                          creator_id: IdType) -> CreateTeamResponse:
-        async with self.unit_of_work as uow:
-            repo = uow.teams
-            try:
-                team: TeamsSchema = await repo.create_team(
-                    name=data.name,
-                    description=data.description,
-                    creator_id=creator_id
-                    )
-                return CreateTeamResponse.model_validate(team.model_dump())
-            except IntegrityError:
-                raise TeamNameAlreadyExistError()
 
     async def create_invite(self,
                             user_id: IdType,
@@ -98,19 +80,3 @@ class TeamsService(BaseService):
             if removed_member_id is None:
                 raise TeamMemberNotFoundError()
             return removed_member_id
-
-    async def change_team_member_role(self,
-                                      team_id: IdType,
-                                      member_id: IdType,
-                                      actor_id: IdType,
-                                      new_role: str) -> None:
-        async with self.unit_of_work as uow:
-            repo = uow.teams
-            updated_id = await repo.change_team_member_role(
-                team_id=team_id,
-                actor_id=actor_id,
-                member_id=member_id,
-                new_role=new_role
-                )
-            if updated_id is None:
-                raise TeamMemberNotFoundError()

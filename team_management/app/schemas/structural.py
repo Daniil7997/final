@@ -8,7 +8,7 @@ from app.schemas.types import (IdType,
                                TeamNameType,
                                TeamDescriptionType,
                                TaskDescriptionType,
-                               UserRoleType,
+                               TeamsRoleType,
                                TaskStatusType)
 
 
@@ -24,7 +24,6 @@ class UsersSchema(BaseSchema):
     name: UserNameType
     email: EmailType
     password: str
-    user_role: UserRoleType
     is_active: bool
 
 
@@ -46,8 +45,7 @@ class TeamMembershipSchema(BaseModel):
     id: IdType
     name: str
     email: str
-    user_role: UserRoleType
-    team_role: str
+    team_role: TeamsRoleType
 
     model_config = ConfigDict(from_attributes=True)
 

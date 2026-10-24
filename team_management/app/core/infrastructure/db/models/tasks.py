@@ -12,13 +12,13 @@ from sqlalchemy import (Enum,
                         String,
                         func)
 
-from app.models.base import Base
+from app.core.infrastructure.db.models.base import Base
 
 
 if typing.TYPE_CHECKING:
-    from app.models.users import Users
-    from app.models.teams import Teams
-    from app.models.evaluations import Evaluations
+    from app.core.infrastructure.db.models.users import Users
+    from app.core.infrastructure.db.models.teams import Teams
+    from app.core.infrastructure.db.models.evaluations import Evaluations
 
 
 class TaskStatus(StrEnum):
@@ -27,12 +27,12 @@ class TaskStatus(StrEnum):
     done = 'done'
 
 
-class Tasks(Base):
+class Tasks(Base, kw_only=True):
     __tablename__ = 'tasks'
 
     description: Mapped[str] = mapped_column(String(2000))
     status: Mapped[TaskStatus] = mapped_column(
-        Enum(TaskStatus, native_enum=False),
+        Enum(TaskStatus, native_enum=True),
         default=TaskStatus.open,
         nullable=False
         )
@@ -96,9 +96,6 @@ class TasksComments(Base, kw_only=True):
         ForeignKey('users.id', ondelete='CASCADE')
     )
     comment: Mapped[str] = mapped_column(String(2000))
-    created_at: Mapped[datetime] = mapped_column(default=func.now())
-    updated_at: Mapped[datetime] = mapped_column(default=func.now(),
-                                                 onupdate=func.now())
 
     # ------ RELATIONSHIP ------
     # Tasks

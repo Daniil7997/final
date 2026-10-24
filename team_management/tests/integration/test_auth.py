@@ -4,7 +4,7 @@ from fastapi import status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
-from app.models.users import Users
+from app.core.infrastructure.db.models.users import Users
 from app.schemas.auth import Tokens
 from app.core.security import verify_password
 

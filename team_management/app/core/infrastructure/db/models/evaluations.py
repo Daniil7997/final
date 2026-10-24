@@ -8,13 +8,13 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy import (ForeignKey,
                         String)
 
-from app.models.base import Base
-from app.models.constraints import range_1_to_5
+from app.core.infrastructure.db.models.base import Base
+from app.core.infrastructure.db.models.constraints import range_1_to_5
 
 
 if typing.TYPE_CHECKING:
-    from app.models.users import Users
-    from app.models.tasks import Tasks
+    from app.core.infrastructure.db.models.users import Users
+    from app.core.infrastructure.db.models.tasks import Tasks
 
 
 class Evaluations(Base, kw_only=True):

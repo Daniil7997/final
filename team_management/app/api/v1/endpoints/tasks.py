@@ -6,7 +6,7 @@ from fastapi import (Body,
                      APIRouter,
                      status)
 
-from app.schemas.types import IdType, UserRoleType
+from app.schemas.types import IdType, TeamsRoleType
 from app.schemas.tasks import (CreateTaskRequest,
                                UpdateTaskResponse,
                                UpdateTaskRequest,
@@ -28,7 +28,7 @@ router = APIRouter(tags=["tasks"])
              status_code=status.HTTP_201_CREATED,
              response_model=SuccessMessageResponse)
 async def create_task(
-    user_role: Annotated[UserRoleType, Depends(required_manager_or_higher)],
+    user_role: Annotated[TeamsRoleType, Depends(required_manager_or_higher)],
     team_id: Annotated[IdType, Path()],
     creator_id: Annotated[IdType, Depends(id_from_access_token)],
     data: Annotated[CreateTaskRequest, Body()],
@@ -45,7 +45,7 @@ async def create_task(
             response_model=UpdateTaskResponse,
             status_code=status.HTTP_200_OK)
 async def edit_task_by_id(
-    user_role: Annotated[UserRoleType, Depends(required_manager_or_higher)],
+    user_role: Annotated[TeamsRoleType, Depends(required_manager_or_higher)],
     team_id: Annotated[IdType, Path()],
     task_id: Annotated[IdType, Path()],
     actor_id: Annotated[IdType, Depends(id_from_access_token)],
@@ -62,7 +62,7 @@ async def edit_task_by_id(
                response_model=SuccessMessageResponse,
                status_code=status.HTTP_200_OK)
 async def delete_task_by_id(
-    user_role: Annotated[UserRoleType, Depends(required_manager_or_higher)],
+    user_role: Annotated[TeamsRoleType, Depends(required_manager_or_higher)],
     team_id: Annotated[IdType, Path()],
     task_id: Annotated[IdType, Path()],
     actor_id: Annotated[IdType, Depends(id_from_access_token)],
