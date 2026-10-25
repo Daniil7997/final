@@ -1,18 +1,22 @@
 from sqlalchemy.exc import IntegrityError
 
-from app.services.base import BaseService
-from app.core.security import hash_password
-from app.schemas.auth import (RegisterUserRequest,
-                              RegisterUserResponse,
-                              TokensRequest,
-                              TokensResponse,
-                              ChangePasswordRequest)
-from app.schemas.types import IdType
-from app.schemas.structural import UsersSchema
-from app.core.security import verify_password, create_tokens
-from app.domain.users.exceptions import (UserNotFoundError,
-                                         EmailAlreadyExistsError)
 from app.core.exceptions.auth import PasswordsDontMatchError
+from app.core.infrastructure.tokens_blacklist.blacklist import tokens_blacklist
+from app.core.security import create_tokens, hash_password, verify_password
+from app.domain.users.exceptions import (
+    EmailAlreadyExistsError,
+    UserNotFoundError,
+)
+from app.schemas.auth import (
+    ChangePasswordRequest,
+    RegisterUserRequest,
+    RegisterUserResponse,
+    TokensRequest,
+    TokensResponse,
+)
+from app.schemas.structural import UsersSchema
+from app.schemas.types import IdType
+from app.services.base import BaseService
 
 
 class AuthService(BaseService):
@@ -64,3 +68,6 @@ class AuthService(BaseService):
                 id=id,
                 update_data={'password': new_password}
                 )
+
+    async def logout(self, token: str, id: IdType | str) -> None:
+        await tokens_blacklist.set(key=token, value=str(id))

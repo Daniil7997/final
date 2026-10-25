@@ -1,19 +1,22 @@
 from typing import Annotated
+
 from fastapi import Depends, Path
-from fastapi.security import (HTTPBearer,
-                              HTTPAuthorizationCredentials)
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
-from app.core.security import decode_token
-from app.schemas.auth import (AccessTokensPayload)
-from app.schemas.types import IdType, TeamsRoleType
-from app.core.infrastructure.unit_of_work import UnitOfWork
-from app.services.auth import AuthService
+from app.core.exceptions.auth import (
+    ForbiddenError,
+    InvalidTokenTypeError,
+    UnauthorizedError,
+)
 from app.core.infrastructure.db.models.teams import TeamsRoles
+from app.core.infrastructure.tokens_blacklist.blacklist import tokens_blacklist
+from app.core.infrastructure.unit_of_work import UnitOfWork
+from app.core.security import decode_token
 from app.dependencies.db import get_unit_of_work
-from app.core.exceptions.auth import (ForbiddenError,
-                                      InvalidTokenTypeError)
 from app.domain.teams.exceptions import TeamMembershipRequiredError
-
+from app.schemas.auth import AccessTokensPayload
+from app.schemas.types import IdType, TeamsRoleType
+from app.services.auth import AuthService
 
 auth_scheme = HTTPBearer()
 
@@ -24,12 +27,21 @@ def auth_service(
     return AuthService(unit_of_work=unit_of_work)
 
 
-def verify_access_token(
+def str_token_from_header(
+        token: Annotated[HTTPAuthorizationCredentials, Depends(auth_scheme)]
+) -> HTTPAuthorizationCredentials:
+    return token
+
+
+async def verify_access_token(
         token: Annotated[HTTPAuthorizationCredentials, Depends(auth_scheme)]
         ) -> AccessTokensPayload:
     payload = decode_token(token=token.credentials)
     if payload.token_type != 'access':
         raise InvalidTokenTypeError()
+    blacklist = await tokens_blacklist.get(key=str(token))
+    if blacklist:
+        raise UnauthorizedError()
     return payload
 
 

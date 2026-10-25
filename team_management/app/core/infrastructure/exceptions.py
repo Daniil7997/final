@@ -7,3 +7,7 @@ class InviteStorageUnavailableError(AppException):
 
 class InviteStorageNotConnectedError(AppException):
     pass
+
+
+class TokensBlacklistUnavailableError(AppException):
+    pass

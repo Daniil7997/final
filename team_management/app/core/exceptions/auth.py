@@ -11,3 +11,7 @@ class ForbiddenError(AppException):
 
 class InvalidTokenTypeError(AppException):
     pass
+
+
+class UnauthorizedError(AppException):
+    pass

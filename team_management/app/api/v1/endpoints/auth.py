@@ -1,20 +1,22 @@
-from typing_extensions import Annotated
+from typing import Annotated
 
-from fastapi import (Body,
-                     Depends,
-                     APIRouter,
-                     status)
+from fastapi import APIRouter, Body, Depends, status
 
-from app.schemas.auth import (RegisterUserRequest,
-                              RegisterUserResponse,
-                              TokensResponse,
-                              TokensRequest,
-                              ChangePasswordRequest)
+from app.dependencies.auth import (
+    auth_service,
+    id_from_access_token,
+    str_token_from_header,
+)
+from app.schemas.auth import (
+    ChangePasswordRequest,
+    RegisterUserRequest,
+    RegisterUserResponse,
+    TokensRequest,
+    TokensResponse,
+)
 from app.schemas.common import SuccessMessageResponse
 from app.schemas.types import IdType
 from app.services.auth import AuthService
-from app.dependencies.auth import id_from_access_token, auth_service
-
 
 router = APIRouter(tags=["auth"])
 
@@ -49,3 +51,15 @@ async def create_tokens(
     service: Annotated[AuthService, Depends(auth_service)]
 ) -> TokensResponse:
     return await service.get_tokens(data=data)
+
+
+@router.post('/logout',
+             response_model=TokensResponse,
+             status_code=status.HTTP_200_OK)
+async def logout(
+    token: Annotated[str, Depends(str_token_from_header)],
+    id: Annotated[str, Depends(id_from_access_token)],
+    service: Annotated[AuthService, Depends(auth_service)]
+) -> SuccessMessageResponse:
+    await service.logout(token=token, id=id)
+    return SuccessMessageResponse(msg='Logout completed successfully')

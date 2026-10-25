@@ -1,26 +1,28 @@
-from collections.abc import AsyncGenerator
 import uuid
-from datetime import date, timedelta, datetime, timezone
+from collections.abc import AsyncGenerator
+from datetime import UTC, date, datetime, timedelta
 
 import pytest
-from httpx import AsyncClient, ASGITransport
-from sqlalchemy.ext.asyncio import (create_async_engine,
-                                    AsyncEngine,
-                                    AsyncSession,
-                                    async_sessionmaker as as_sessionmaker,
-                                    AsyncTransaction)
 from asgi_lifespan import LifespanManager
+from httpx import ASGITransport, AsyncClient
+from sqlalchemy.ext.asyncio import (
+    AsyncEngine,
+    AsyncSession,
+    AsyncTransaction,
+    create_async_engine,
+)
+from sqlalchemy.ext.asyncio import async_sessionmaker as as_sessionmaker
 
 from app.core.config import settings
-from app.core.security import hash_password, create_tokens
-from app.main import application
-from app.dependencies.db import get_session
-from app.core.infrastructure.db.models.users import Users
-from app.core.infrastructure.db.models.teams import Teams
-from app.core.infrastructure.db.models.tasks import Tasks
 from app.core.infrastructure.db.models.meetings import Meetings
+from app.core.infrastructure.db.models.tasks import Tasks
+from app.core.infrastructure.db.models.teams import Teams
+from app.core.infrastructure.db.models.users import Users
 from app.core.infrastructure.storage.invite import invite_storage
+from app.core.security import create_tokens, hash_password
 from app.core.utils import generate_invite_code
+from app.dependencies.db import get_session
+from app.main import application
 from tests.factories import AggregateFactory
 
 
@@ -34,7 +36,7 @@ async def async_engine() -> AsyncEngine:
 
 
 @pytest.fixture(scope='function')
-async def test_session(async_engine) -> AsyncGenerator[AsyncSession, None]:
+async def test_session(async_engine) -> AsyncGenerator[AsyncSession]:
     async with async_engine.connect() as conn:
         trans: AsyncTransaction = await conn.begin()
         async_session = as_sessionmaker(
@@ -197,7 +199,7 @@ async def task(team: Teams,
 @pytest.fixture(scope='function')
 async def meeting(team: Teams,
                   aggregate_factory: AggregateFactory) -> Meetings:
-    start_meeting = datetime.now(timezone.utc) + timedelta(hours=1)
+    start_meeting = datetime.now(UTC) + timedelta(hours=1)
     end_meeting = start_meeting + timedelta(hours=1)
     return await aggregate_factory.meetings.create_meeting(
         description="some text",

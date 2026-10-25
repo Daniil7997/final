@@ -4,7 +4,8 @@ from fastapi.responses import JSONResponse
 
 from app.core.exceptions.auth import (PasswordsDontMatchError,
                                       ForbiddenError,
-                                      InvalidTokenTypeError)
+                                      InvalidTokenTypeError,
+                                      UnauthorizedError,)
 
 
 def register_auth_errors_handlers(app: FastAPI) -> None:
@@ -59,6 +60,18 @@ def register_auth_errors_handlers(app: FastAPI) -> None:
         exc: InvalidTokenTypeError
     ) -> JSONResponse:
         msg = exc.msg or "Invalid token type"
+        return JSONResponse(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            content={"msg": msg},
+            headers={"WWW-Authenticate": "Bearer"}
+        )
+
+    @app.exception_handler(UnauthorizedError)
+    async def handle_invalid_token_type(
+        request: Request,
+        exc: UnauthorizedError
+    ) -> JSONResponse:
+        msg = exc.msg or "Authorization is required."
         return JSONResponse(
             status_code=status.HTTP_401_UNAUTHORIZED,
             content={"msg": msg},
