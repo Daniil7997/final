@@ -30,7 +30,7 @@ def auth_service(
 def str_token_from_header(
         token: Annotated[HTTPAuthorizationCredentials, Depends(auth_scheme)]
 ) -> HTTPAuthorizationCredentials:
-    return token
+    return str(token)
 
 
 async def verify_access_token(

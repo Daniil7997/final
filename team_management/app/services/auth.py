@@ -1,3 +1,5 @@
+from datetime import UTC, datetime
+
 from sqlalchemy.exc import IntegrityError
 
 from app.core.exceptions.auth import PasswordsDontMatchError
@@ -8,6 +10,7 @@ from app.domain.users.exceptions import (
     UserNotFoundError,
 )
 from app.schemas.auth import (
+    AccessTokensPayload,
     ChangePasswordRequest,
     RegisterUserRequest,
     RegisterUserResponse,
@@ -69,5 +72,9 @@ class AuthService(BaseService):
                 update_data={'password': new_password}
                 )
 
-    async def logout(self, token: str, id: IdType | str) -> None:
-        await tokens_blacklist.set(key=token, value=str(id))
+    async def logout(self, token: str, payload: AccessTokensPayload) -> None:
+        current_time = datetime.now(UTC).timestamp()
+        expire = int(payload.exp - current_time)
+        await tokens_blacklist.set(key=token,
+                                   value=str(payload.sub),
+                                   expire=expire)

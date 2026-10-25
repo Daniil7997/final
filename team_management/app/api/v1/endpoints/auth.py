@@ -6,8 +6,10 @@ from app.dependencies.auth import (
     auth_service,
     id_from_access_token,
     str_token_from_header,
+    verify_access_token,
 )
 from app.schemas.auth import (
+    AccessTokensPayload,
     ChangePasswordRequest,
     RegisterUserRequest,
     RegisterUserResponse,
@@ -54,12 +56,12 @@ async def create_tokens(
 
 
 @router.post('/logout',
-             response_model=TokensResponse,
+             response_model=SuccessMessageResponse,
              status_code=status.HTTP_200_OK)
 async def logout(
     token: Annotated[str, Depends(str_token_from_header)],
-    id: Annotated[str, Depends(id_from_access_token)],
+    payload: Annotated[AccessTokensPayload, Depends(verify_access_token)],
     service: Annotated[AuthService, Depends(auth_service)]
 ) -> SuccessMessageResponse:
-    await service.logout(token=token, id=id)
+    await service.logout(token=token, payload=payload)
     return SuccessMessageResponse(msg='Logout completed successfully')

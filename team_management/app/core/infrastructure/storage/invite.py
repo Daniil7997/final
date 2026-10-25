@@ -17,7 +17,8 @@ class InviteStore:
     async def get(self, key: str) -> str | None:
         return await self.storage.get(key)
 
-    async def set(self, key: str,
+    async def set(self,
+                  key: str,
                   value: str,
                   expire: int = settings.app.invite_code_ttl):
         await self.storage.set(

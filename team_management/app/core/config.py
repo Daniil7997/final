@@ -52,6 +52,10 @@ class RedisSettings(SharedConfig):
     def url_invite_storage(self) -> str:
         return self._base_url + '/0'
 
+    @property
+    def url_token_blacklist(self) -> str:
+        return self._base_url + '/1'
+
 
 class ApplicationSettings(SharedConfig):
     PRIVATE_KEY_HEX: str

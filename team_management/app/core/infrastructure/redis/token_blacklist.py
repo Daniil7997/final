@@ -16,14 +16,14 @@ class RedisTokensBlacklist:
             return
         try:
             redis = Redis.from_url(
-                settings.redis.url_invite_storage,
+                settings.redis.url_token_blacklist,
                 encoding="utf-8",
                 decode_responses=True
             )
             await redis.ping()
             self.redis = redis
         except RedisError:
-            pass
+            raise TokensBlacklistUnavailableError()
 
     async def close(self) -> None:
         if self.redis is None:
@@ -62,7 +62,7 @@ class RedisTokensBlacklist:
     ) -> None:
         redis = self.redis
         if redis is None:
-            return
+            raise TokensBlacklistUnavailableError()
         try:
             await redis.set(name=key, ex=expire, value=value)
         except RedisError:
