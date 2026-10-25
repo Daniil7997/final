@@ -1,13 +1,14 @@
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
-from sqlalchemy.orm import (MappedAsDataclass,
-                            DeclarativeBase,
-                            Mapped,
-                            mapped_column)
-
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy import DateTime
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import (
+    DeclarativeBase,
+    Mapped,
+    MappedAsDataclass,
+    mapped_column,
+)
 
 
 class Base(MappedAsDataclass, DeclarativeBase, kw_only=True):
@@ -21,15 +22,15 @@ class Base(MappedAsDataclass, DeclarativeBase, kw_only=True):
     )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
-        insert_default=lambda: datetime.now(timezone.utc),
-        default_factory=lambda: datetime.now(timezone.utc),
+        insert_default=lambda: datetime.now(UTC),
+        default_factory=lambda: datetime.now(UTC),
         sort_order=100
         )
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
-        insert_default=lambda: datetime.now(timezone.utc),
-        default_factory=lambda: datetime.now(timezone.utc),
-        onupdate=lambda: datetime.now(timezone.utc),
+        insert_default=lambda: datetime.now(UTC),
+        default_factory=lambda: datetime.now(UTC),
+        onupdate=lambda: datetime.now(UTC),
         sort_order=101
         )
 

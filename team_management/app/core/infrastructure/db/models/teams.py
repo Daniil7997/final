@@ -1,19 +1,16 @@
+import enum
 import typing
 import uuid
-import enum
 
-from sqlalchemy.orm import (Mapped,
-                            mapped_column,
-                            relationship)
-from sqlalchemy import UUID, ForeignKey, String, UniqueConstraint, Enum
+from sqlalchemy import UUID, Enum, ForeignKey, String, UniqueConstraint
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.infrastructure.db.models.base import Base
 
-
 if typing.TYPE_CHECKING:
-    from app.core.infrastructure.db.models.users import Users
-    from app.core.infrastructure.db.models.tasks import Tasks
     from app.core.infrastructure.db.models.meetings import Meetings
+    from app.core.infrastructure.db.models.tasks import Tasks
+    from app.core.infrastructure.db.models.users import Users
 
 
 class TeamsRoles(enum.StrEnum):
@@ -66,15 +63,15 @@ class Teams(Base):
                                                     nullable=True)
 
     # ----- RELATIONSHIP -----
-    membership: Mapped[list['TeamMembership']] = relationship(
+    membership: Mapped[list[TeamMembership]] = relationship(
         back_populates='team',
         init=False
         )
-    tasks: Mapped[list['Tasks']] = relationship(
+    tasks: Mapped[list[Tasks]] = relationship(
         back_populates='team',
         init=False
     )
-    meetings: Mapped[list['Meetings']] = relationship(
+    meetings: Mapped[list[Meetings]] = relationship(
         back_populates='team',
         init=False
     )

@@ -1,10 +1,12 @@
 from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
 
-from app.domain.meetings.exceptions import (MeetingsOverlapError,
-                                            InvalidMeetingTimeRangeError,
-                                            MeetingNotFoundError,
-                                            UserAlreadyInMeetingError)
+from app.domain.meetings.exceptions import (
+    InvalidMeetingTimeRangeError,
+    MeetingNotFoundError,
+    MeetingsOverlapError,
+    UserAlreadyInMeetingError,
+)
 
 
 def register_meetings_errors_handlers(app: FastAPI) -> None:

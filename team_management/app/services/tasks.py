@@ -1,13 +1,15 @@
-from app.services.base import BaseService
-from app.schemas.tasks import (CreateTaskRequest,
-                               UpdateTaskRequest,
-                               UpdateTaskResponse,
-                               GetTaskResponse,
-                               ChangeTaskStatusRequest,
-                               ChangeTaskStatusResponse,
-                               CreateTaskCommentRequest)
-from app.schemas.types import IdType
 from app.domain.tasks.exceptions import TaskNotFoundError
+from app.schemas.tasks import (
+    ChangeTaskStatusRequest,
+    ChangeTaskStatusResponse,
+    CreateTaskCommentRequest,
+    CreateTaskRequest,
+    GetTaskResponse,
+    UpdateTaskRequest,
+    UpdateTaskResponse,
+)
+from app.schemas.types import IdType
+from app.services.base import BaseService
 
 
 class TasksService(BaseService):

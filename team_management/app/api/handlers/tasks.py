@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
 
-from app.domain.tasks.exceptions import TaskNotFoundError, TaskNotDoneError
+from app.domain.tasks.exceptions import TaskNotDoneError, TaskNotFoundError
 
 
 def register_tasks_errors_handlers(app: FastAPI) -> None:

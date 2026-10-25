@@ -1,18 +1,19 @@
-from typing import Annotated, AsyncGenerator
+from collections.abc import AsyncGenerator
+from typing import Annotated
 
-from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import Depends
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.infrastructure.unit_of_work import UnitOfWork
 from app.core.infrastructure.db.connection import async_session_factory
+from app.core.infrastructure.unit_of_work import UnitOfWork
 
 
-async def get_sedssion() -> AsyncGenerator[AsyncSession, None]:
+async def get_sedssion() -> AsyncGenerator[AsyncSession]:
     async with async_session_factory() as session:
         yield session
 
 
-async def get_session() -> AsyncGenerator[AsyncSession, None]:
+async def get_session() -> AsyncGenerator[AsyncSession]:
     async with async_session_factory() as session:
         try:
             yield session

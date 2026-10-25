@@ -1,15 +1,17 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.infrastructure.db.repositories import (UsersRepo,
-                              TeamsRepo,
-                              TasksRepo,
-                              EvaluationsRepo,
-                              MeetingsRepo)
-from app.core.infrastructure.locking.locker import AdvisoryLocker
+from app.core.infrastructure.db.repositories import (
+    EvaluationsRepo,
+    MeetingsRepo,
+    TasksRepo,
+    TeamsRepo,
+    UsersRepo,
+)
 from app.core.infrastructure.locking.key_factory import KeyFactory
+from app.core.infrastructure.locking.locker import AdvisoryLocker
 
 
-class UnitOfWork():
+class UnitOfWork:
     def __init__(self, session: AsyncSession):
         self.session = session
 

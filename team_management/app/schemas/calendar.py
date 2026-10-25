@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from app.schemas.structural import TaskSchema, MeetingsSchema
+from app.schemas.structural import MeetingsSchema, TaskSchema
 
 
 class GetCalendarResponse(BaseModel):

@@ -1,24 +1,18 @@
-from enum import StrEnum
-import uuid
-from datetime import datetime, date
 import typing
+import uuid
+from datetime import date
+from enum import StrEnum
 
-from sqlalchemy.orm import (Mapped,
-                            mapped_column,
-                            relationship)
+from sqlalchemy import Enum, ForeignKey, String
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy import (Enum,
-                        ForeignKey,
-                        String,
-                        func)
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.infrastructure.db.models.base import Base
 
-
 if typing.TYPE_CHECKING:
-    from app.core.infrastructure.db.models.users import Users
-    from app.core.infrastructure.db.models.teams import Teams
     from app.core.infrastructure.db.models.evaluations import Evaluations
+    from app.core.infrastructure.db.models.teams import Teams
+    from app.core.infrastructure.db.models.users import Users
 
 
 class TaskStatus(StrEnum):
@@ -57,28 +51,28 @@ class Tasks(Base, kw_only=True):
 
     # ------ RELATIONSHIP ------
     # Users
-    creator: Mapped['Users'] = relationship(
+    creator: Mapped[Users] = relationship(
         back_populates='created_tasks',
         foreign_keys=[creator_id],
         init=False
         )
-    assignee: Mapped['Users | None'] = relationship(
+    assignee: Mapped[Users | None] = relationship(
         back_populates='assigned_tasks',
         foreign_keys=[assignee_id],
         init=False
         )
     # TasksComments
-    comments: Mapped[list['TasksComments']] = relationship(
+    comments: Mapped[list[TasksComments]] = relationship(
         back_populates='task',
         init=False
         )
-    team: Mapped['Teams'] = relationship(
+    team: Mapped[Teams] = relationship(
         foreign_keys=[team_id],
         back_populates='tasks',
         init=False
     )
     # Evaluations
-    evaluations: Mapped['Evaluations'] = relationship(
+    evaluations: Mapped[Evaluations] = relationship(
         back_populates='tasks',
         init=False
     )
@@ -105,7 +99,7 @@ class TasksComments(Base, kw_only=True):
         init=False
         )
     # Users
-    author: Mapped['Users'] = relationship(
+    author: Mapped[Users] = relationship(
         back_populates='tasks_comments',
         foreign_keys=[author_id],
         init=False

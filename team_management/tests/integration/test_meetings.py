@@ -1,15 +1,18 @@
-from datetime import timedelta, datetime, timezone
+from datetime import UTC, datetime, timedelta
 
 import pytest
-from httpx import AsyncClient
 from fastapi import status
-from sqlalchemy.ext.asyncio import AsyncSession
+from httpx import AsyncClient
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.infrastructure.db.models.users import Users
+from app.core.infrastructure.db.models.meetings import (
+    Meetings,
+    MeetingsParticipants,
+)
 from app.core.infrastructure.db.models.teams import Teams
+from app.core.infrastructure.db.models.users import Users
 from app.schemas.auth import Tokens
-from app.core.infrastructure.db.models.meetings import Meetings, MeetingsParticipants
 
 
 class TestCreateMeeting:
@@ -27,7 +30,7 @@ class TestCreateMeeting:
         db_meeting = await test_session.scalar(stmt)
         assert db_meeting is None
 
-        start_meeting = datetime.now(timezone.utc) + timedelta(days=1, hours=2)
+        start_meeting = datetime.now(UTC) + timedelta(days=1, hours=2)
         end_meeting = start_meeting + timedelta(hours=1)
         description = "do something"
 
@@ -63,7 +66,7 @@ class TestCreateMeeting:
         db_meeting = await test_session.scalar(stmt)
         assert db_meeting is None
 
-        start_meeting = datetime.now(timezone.utc) + timedelta(days=1, hours=2)
+        start_meeting = datetime.now(UTC) + timedelta(days=1, hours=2)
         end_meeting = start_meeting + timedelta(hours=1)
         description = "do something"
 
@@ -96,7 +99,7 @@ class TestCreateMeeting:
         db_meeting = await test_session.scalar(stmt)
         assert db_meeting is None
 
-        start_meeting = datetime.now(timezone.utc) + timedelta(days=1, hours=2)
+        start_meeting = datetime.now(UTC) + timedelta(days=1, hours=2)
         end_meeting = start_meeting - timedelta(hours=1)
         description = "do something"
 

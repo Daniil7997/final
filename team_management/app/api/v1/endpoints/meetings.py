@@ -1,21 +1,18 @@
-from typing_extensions import Annotated
+from typing import Annotated
 
-from fastapi import (Body,
-                     Path,
-                     Depends,
-                     APIRouter,
-                     status)
+from fastapi import APIRouter, Body, Depends, Path, status
 
-from app.schemas.meetings import (CreateMeetingRequest,
-                                  CreateMeetingsResponse,
-                                  AddUserToMeetingRequest,
-                                  GetTeamMeetingsResponse)
-from app.schemas.types import IdType, TeamsRoleType
-from app.schemas.common import SuccessMessageResponse
 from app.dependencies.auth import required_manager_or_higher
 from app.dependencies.meetings import meetings_service
+from app.schemas.common import SuccessMessageResponse
+from app.schemas.meetings import (
+    AddUserToMeetingRequest,
+    CreateMeetingRequest,
+    CreateMeetingsResponse,
+    GetTeamMeetingsResponse,
+)
+from app.schemas.types import IdType, TeamsRoleType
 from app.services.meetings import MeetingsService
-
 
 router = APIRouter(tags=["meetings"])
 

@@ -1,11 +1,13 @@
-from jwt.exceptions import InvalidTokenError, ExpiredSignatureError
 from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
+from jwt.exceptions import ExpiredSignatureError, InvalidTokenError
 
-from app.core.exceptions.auth import (PasswordsDontMatchError,
-                                      ForbiddenError,
-                                      InvalidTokenTypeError,
-                                      UnauthorizedError,)
+from app.core.exceptions.auth import (
+    ForbiddenError,
+    InvalidTokenTypeError,
+    PasswordsDontMatchError,
+    UnauthorizedError,
+)
 
 
 def register_auth_errors_handlers(app: FastAPI) -> None:
@@ -67,7 +69,7 @@ def register_auth_errors_handlers(app: FastAPI) -> None:
         )
 
     @app.exception_handler(UnauthorizedError)
-    async def handle_invalid_token_type(
+    async def handle_unauthorized(
         request: Request,
         exc: UnauthorizedError
     ) -> JSONResponse:

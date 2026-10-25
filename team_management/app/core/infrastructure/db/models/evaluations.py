@@ -1,20 +1,16 @@
-import uuid
 import typing
+import uuid
 
-from sqlalchemy.orm import (Mapped,
-                            mapped_column,
-                            relationship)
+from sqlalchemy import ForeignKey, String
 from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy import (ForeignKey,
-                        String)
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.infrastructure.db.models.base import Base
 from app.core.infrastructure.db.models.constraints import range_1_to_5
 
-
 if typing.TYPE_CHECKING:
-    from app.core.infrastructure.db.models.users import Users
     from app.core.infrastructure.db.models.tasks import Tasks
+    from app.core.infrastructure.db.models.users import Users
 
 
 class Evaluations(Base, kw_only=True):
@@ -41,17 +37,17 @@ class Evaluations(Base, kw_only=True):
     )
     # ------ RELATIONSHIP ------
     # Users
-    grader: Mapped['Users'] = relationship(
+    grader: Mapped[Users] = relationship(
         back_populates='grades_given',
         foreign_keys=[grader_id],
         init=False
     )
-    author: Mapped['Users'] = relationship(
+    author: Mapped[Users] = relationship(
         back_populates='grades_recieved',
         foreign_keys=[author_id],
         init=False
     )
-    tasks: Mapped['Tasks'] = relationship(
+    tasks: Mapped[Tasks] = relationship(
         back_populates='evaluations',
         foreign_keys=[task_id],
         init=False

@@ -1,12 +1,12 @@
 import pytest
-from httpx import AsyncClient
 from fastapi import status
-from sqlalchemy.ext.asyncio import AsyncSession
+from httpx import AsyncClient
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.infrastructure.db.models.users import Users
-from app.schemas.auth import Tokens
 from app.core.security import verify_password
+from app.schemas.auth import Tokens
 
 
 class TestRegisterUser:

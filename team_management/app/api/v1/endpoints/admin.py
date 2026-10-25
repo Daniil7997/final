@@ -1,19 +1,17 @@
-from typing_extensions import Annotated
+from typing import Annotated
 
-from fastapi import (Body,
-                     Depends,
-                     APIRouter, Path,
-                     status)
+from fastapi import APIRouter, Body, Depends, Path, status
 
-from app.schemas.admin import (CreateTeamRequest,
-                               CreateTeamResponse)
-from app.schemas.admin import ChangeTeamMemberRole
+from app.dependencies.admin import admin_service
+from app.dependencies.auth import required_admin
+from app.schemas.admin import (
+    ChangeTeamMemberRole,
+    CreateTeamRequest,
+    CreateTeamResponse,
+)
 from app.schemas.common import SuccessMessageResponse
 from app.schemas.types import IdType
 from app.services.admin import AdminService
-from app.dependencies.auth import required_admin
-from app.dependencies.admin import admin_service
-
 
 router = APIRouter(prefix='/admin', tags=["Administration"])
 

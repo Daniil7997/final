@@ -1,15 +1,12 @@
-from typing_extensions import Annotated
+from typing import Annotated
 
-from fastapi import (Depends,
-                     APIRouter,
-                     status)
+from fastapi import APIRouter, Depends, status
 
-from app.schemas.users import GetProfileResponse
-from app.schemas.types import IdType
-from app.services.users import UsersService
-from app.dependencies.users import users_service
 from app.dependencies.auth import id_from_access_token
-
+from app.dependencies.users import users_service
+from app.schemas.types import IdType
+from app.schemas.users import GetProfileResponse
+from app.services.users import UsersService
 
 router = APIRouter(tags=["users"])
 

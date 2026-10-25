@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from app.schemas.types import UserNameType, EmailType
+from app.schemas.types import EmailType, UserNameType
 
 
 # ======================================================

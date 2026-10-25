@@ -1,5 +1,5 @@
-import uuid
 import hashlib
+import uuid
 
 
 class KeyFactory:

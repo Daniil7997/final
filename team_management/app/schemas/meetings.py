@@ -2,8 +2,7 @@ import datetime as dt
 
 from pydantic import BaseModel
 
-from app.schemas.types import (IdType,
-                               MeetingsDescriptionType)
+from app.schemas.types import IdType, MeetingsDescriptionType
 
 
 # ======================================================

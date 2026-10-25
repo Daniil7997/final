@@ -1,20 +1,16 @@
-from typing_extensions import Annotated
+from typing import Annotated
 
-from fastapi import (Body,
-                     Path,
-                     Depends,
-                     APIRouter,
-                     status)
+from fastapi import APIRouter, Body, Depends, Path, status
 
-from app.schemas.evaluations import (CreateEvaluationsRequest,
-                                     GetAvgEvaluation)
-from app.schemas.types import IdType, TeamsRoleType
-from app.schemas.common import SuccessMessageResponse
-from app.dependencies.auth import (required_manager_or_higher,
-                                   id_from_access_token)
+from app.dependencies.auth import (
+    id_from_access_token,
+    required_manager_or_higher,
+)
 from app.dependencies.evaluations import evaluations_service
+from app.schemas.common import SuccessMessageResponse
+from app.schemas.evaluations import CreateEvaluationsRequest, GetAvgEvaluation
+from app.schemas.types import IdType, TeamsRoleType
 from app.services.evaluations import EvaluationsService
-
 
 router = APIRouter(tags=["evaluations"])
 

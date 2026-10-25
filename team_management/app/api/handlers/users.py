@@ -1,8 +1,10 @@
 from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
 
-from app.domain.users.exceptions import (UserNotFoundError,
-                                         EmailAlreadyExistsError)
+from app.domain.users.exceptions import (
+    EmailAlreadyExistsError,
+    UserNotFoundError,
+)
 
 
 def register_users_errors_handlers(app: FastAPI) -> None:

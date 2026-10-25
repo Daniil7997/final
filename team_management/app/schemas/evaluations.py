@@ -1,7 +1,6 @@
 from pydantic import BaseModel
 
-from app.schemas.types import (EvaluationsCommentType,
-                               EvaluationsGradeType)
+from app.schemas.types import EvaluationsCommentType, EvaluationsGradeType
 
 
 # ======================================================

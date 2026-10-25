@@ -1,8 +1,11 @@
 from pydantic import BaseModel, Field
 
-from app.schemas.types import (IdType,
-                               TeamNameType,
-                               TeamDescriptionType, TeamsRoleType)
+from app.schemas.types import (
+    IdType,
+    TeamDescriptionType,
+    TeamNameType,
+    TeamsRoleType,
+)
 
 
 # ======================================================

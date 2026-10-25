@@ -2,14 +2,16 @@ import datetime as dt
 
 from pydantic import BaseModel, ConfigDict
 
-from app.schemas.types import (IdType,
-                               UserNameType,
-                               EmailType,
-                               TeamNameType,
-                               TeamDescriptionType,
-                               TaskDescriptionType,
-                               TeamsRoleType,
-                               TaskStatusType)
+from app.schemas.types import (
+    EmailType,
+    IdType,
+    TaskDescriptionType,
+    TaskStatusType,
+    TeamDescriptionType,
+    TeamNameType,
+    TeamsRoleType,
+    UserNameType,
+)
 
 
 class BaseSchema(BaseModel):

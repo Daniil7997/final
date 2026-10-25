@@ -1,9 +1,6 @@
 from pydantic import BaseModel
 
-from app.schemas.types import (UserNameType,
-                               PasswordType,
-                               EmailType,
-                               IdType)
+from app.schemas.types import EmailType, IdType, PasswordType, UserNameType
 
 
 # ======================================================

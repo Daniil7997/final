@@ -4,9 +4,10 @@ from redis.asyncio import Redis
 from redis.exceptions import RedisError
 
 from app.core.config import settings
-from app.core.infrastructure.exceptions import (InviteStorageUnavailableError,
-                                                InviteStorageNotConnectedError)
-
+from app.core.infrastructure.exceptions import (
+    InviteStorageNotConnectedError,
+    InviteStorageUnavailableError,
+)
 
 log = logging.getLogger('redis_invite_storage')
 
@@ -36,7 +37,7 @@ class RedisInviteStorage:
 
     async def close(self) -> None:
         if self.redis is None:
-            return None
+            return
         try:
             await self.redis.aclose()
         except RedisError:

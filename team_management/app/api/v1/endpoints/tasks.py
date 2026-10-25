@@ -1,26 +1,25 @@
-from typing_extensions import Annotated
+from typing import Annotated
 
-from fastapi import (Body,
-                     Path,
-                     Depends,
-                     APIRouter,
-                     status)
+from fastapi import APIRouter, Body, Depends, Path, status
 
-from app.schemas.types import IdType, TeamsRoleType
-from app.schemas.tasks import (CreateTaskRequest,
-                               UpdateTaskResponse,
-                               UpdateTaskRequest,
-                               GetTaskResponse,
-                               ChangeTaskStatusRequest,
-                               ChangeTaskStatusResponse,
-                               CreateTaskCommentRequest)
-from app.schemas.common import SuccessMessageResponse
-from app.dependencies.auth import (required_manager_or_higher,
-                                   required_member_or_higher,
-                                   id_from_access_token)
+from app.dependencies.auth import (
+    id_from_access_token,
+    required_manager_or_higher,
+    required_member_or_higher,
+)
 from app.dependencies.tasks import tasks_service
+from app.schemas.common import SuccessMessageResponse
+from app.schemas.tasks import (
+    ChangeTaskStatusRequest,
+    ChangeTaskStatusResponse,
+    CreateTaskCommentRequest,
+    CreateTaskRequest,
+    GetTaskResponse,
+    UpdateTaskRequest,
+    UpdateTaskResponse,
+)
+from app.schemas.types import IdType, TeamsRoleType
 from app.services.tasks import TasksService
-
 
 router = APIRouter(tags=["tasks"])
 

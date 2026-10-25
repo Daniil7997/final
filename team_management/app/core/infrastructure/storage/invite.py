@@ -1,6 +1,6 @@
-from app.core.infrastructure.storage.protocols import Storage
-from app.core.infrastructure.redis.invite_storage import RedisInviteStorage
 from app.core.config import settings
+from app.core.infrastructure.redis.invite_storage import RedisInviteStorage
+from app.core.infrastructure.storage.protocols import Storage
 
 
 class InviteStore:

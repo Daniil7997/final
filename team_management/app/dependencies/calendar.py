@@ -3,8 +3,8 @@ from typing import Annotated
 from fastapi import Depends
 
 from app.core.infrastructure.unit_of_work import UnitOfWork
-from app.services.calendar import CalendarService
 from app.dependencies.db import get_unit_of_work
+from app.services.calendar import CalendarService
 
 
 def calendar_service(

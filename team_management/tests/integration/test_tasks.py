@@ -1,14 +1,18 @@
 from datetime import date, timedelta
 
 import pytest
-from httpx import AsyncClient
 from fastapi import status
-from sqlalchemy.ext.asyncio import AsyncSession
+from httpx import AsyncClient
 from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.infrastructure.db.models.users import Users
+from app.core.infrastructure.db.models.tasks import (
+    Tasks,
+    TasksComments,
+    TaskStatus,
+)
 from app.core.infrastructure.db.models.teams import Teams
-from app.core.infrastructure.db.models.tasks import Tasks, TasksComments, TaskStatus
+from app.core.infrastructure.db.models.users import Users
 from app.schemas.auth import Tokens
 
 
@@ -278,9 +282,6 @@ class TestCreateTaskComment:
         assert db_comment.comment == text_new_comment
         assert db_comment.task_id == task.id
         assert db_comment.author_id == user_manager.id
-
-
-class TestCreateTaskComment:
 
     @pytest.mark.integration
     @pytest.mark.asyncio

@@ -1,32 +1,44 @@
-import typing
 import datetime as dt
+import typing
 
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import (exists,
-                        select,
-                        update,
-                        delete,
-                        text,
-                        Select,
-                        Update,
-                        Delete,
-                        Exists)
-from sqlalchemy.sql import func
+from sqlalchemy import (
+    Delete,
+    Select,
+    Update,
+    delete,
+    exists,
+    select,
+    text,
+    update,
+)
 from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.sql import func
 
-from app.core.infrastructure.db.models.users import Users
-from app.core.infrastructure.db.models.teams import Teams, TeamMembership, TeamsRoles
-from app.core.infrastructure.db.models.tasks import Tasks, TasksComments, TaskStatus
 from app.core.infrastructure.db.models.evaluations import Evaluations
-from app.core.infrastructure.db.models.meetings import Meetings, MeetingsParticipants
-
-from app.schemas.structural import (UsersSchema,
-                                    TeamsSchema,
-                                    TaskSchema,
-                                    TeamMembershipSchema,
-                                    MeetingsSchema)
+from app.core.infrastructure.db.models.meetings import (
+    Meetings,
+    MeetingsParticipants,
+)
+from app.core.infrastructure.db.models.tasks import (
+    Tasks,
+    TasksComments,
+    TaskStatus,
+)
+from app.core.infrastructure.db.models.teams import (
+    TeamMembership,
+    Teams,
+    TeamsRoles,
+)
+from app.core.infrastructure.db.models.users import Users
+from app.schemas.structural import (
+    MeetingsSchema,
+    TaskSchema,
+    TeamMembershipSchema,
+    TeamsSchema,
+    UsersSchema,
+)
 from app.schemas.types import IdType, TeamsRoleType
-
 
 T_Stmt = typing.TypeVar("T_Stmt", Select, Update, Delete)
 
@@ -36,7 +48,7 @@ class BaseRepo:
         self.session = session
 
     def _only_active_users(self, stmt: T_Stmt) -> T_Stmt:
-        stmt = stmt.where(Users.is_active == True)  # noqa E712
+        stmt = stmt.where(Users.is_active == True)
         return stmt
 
 

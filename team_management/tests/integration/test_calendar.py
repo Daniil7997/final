@@ -1,16 +1,19 @@
-from datetime import date, timedelta, datetime, timezone
+from datetime import UTC, date, datetime, timedelta
 
 import pytest
-from httpx import AsyncClient
 from fastapi import status
+from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.infrastructure.db.models.users import Users
-from app.core.infrastructure.db.models.teams import Teams
+from app.core.infrastructure.db.models.meetings import (
+    Meetings,
+    MeetingsParticipants,
+)
 from app.core.infrastructure.db.models.tasks import Tasks
-from app.core.infrastructure.db.models.meetings import Meetings, MeetingsParticipants
+from app.core.infrastructure.db.models.teams import Teams
+from app.core.infrastructure.db.models.users import Users
 from app.schemas.auth import Tokens
-from app.schemas.structural import TaskSchema, MeetingsSchema
+from app.schemas.structural import MeetingsSchema, TaskSchema
 
 
 class TestGetCalendar:
@@ -31,7 +34,7 @@ class TestGetCalendar:
                      description='some_text',
                      team_id=team.id,
                      assignee_id=user_member.id)
-        start_meeting = datetime.now(timezone.utc) + timedelta(days=1, hours=2)
+        start_meeting = datetime.now(UTC) + timedelta(days=1, hours=2)
         end_meeting = start_meeting + timedelta(hours=1)
         meeting = Meetings(
             description="some text",

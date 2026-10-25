@@ -1,13 +1,13 @@
-from typing import AsyncIterator
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from app.api.v1.routers import main_v1_router
+import app.core.infrastructure.db.models  # noqa F401
 from app.api.handlers.register_handlers import register_all_handlers
+from app.api.v1.routers import main_v1_router
 from app.core.infrastructure.storage.invite import invite_storage
 from app.core.infrastructure.tokens_blacklist.blacklist import tokens_blacklist
-import app.core.infrastructure.db.models   # noqa F401
 
 
 @asynccontextmanager

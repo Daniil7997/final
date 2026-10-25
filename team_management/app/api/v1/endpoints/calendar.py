@@ -1,17 +1,13 @@
-from typing_extensions import Annotated
 import datetime as dt
+from typing import Annotated
 
-from fastapi import (Query,
-                     Depends,
-                     APIRouter,
-                     status)
+from fastapi import APIRouter, Depends, Query, status
 
-from app.schemas.types import IdType
-from app.schemas.calendar import GetCalendarResponse
 from app.dependencies.auth import id_from_access_token
 from app.dependencies.calendar import calendar_service
+from app.schemas.calendar import GetCalendarResponse
+from app.schemas.types import IdType
 from app.services.calendar import CalendarService
-
 
 router = APIRouter(tags=['calendar'])
 

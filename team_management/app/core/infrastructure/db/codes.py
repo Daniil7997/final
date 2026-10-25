@@ -1,6 +1,5 @@
 from enum import StrEnum
 
-
 """
 exception codes
 https://www.postgresql.org/docs/current/errcodes-appendix.html

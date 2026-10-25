@@ -1,18 +1,15 @@
 import typing
 
-from sqlalchemy.orm import (Mapped,
-                            mapped_column,
-                            relationship)
 from sqlalchemy import String
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.infrastructure.db.models.base import Base
 
-
 if typing.TYPE_CHECKING:
-    from app.core.infrastructure.db.models.teams import TeamMembership
+    from app.core.infrastructure.db.models.evaluations import Evaluations
     from app.core.infrastructure.db.models.meetings import Meetings
     from app.core.infrastructure.db.models.tasks import Tasks, TasksComments
-    from app.core.infrastructure.db.models.evaluations import Evaluations
+    from app.core.infrastructure.db.models.teams import TeamMembership
 
 
 class Users(Base):

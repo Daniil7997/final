@@ -1,21 +1,21 @@
-from typing_extensions import Annotated
+from typing import Annotated
 
-from fastapi import (Body,
-                     Path,
-                     Depends,
-                     APIRouter,
-                     status)
+from fastapi import APIRouter, Body, Depends, Path, status
 
-from app.schemas.teams import (CreateInviteResponse,
-                               JoinTeamRequest,
-                               GetMembershipResponse)
-from app.schemas.types import IdType, TeamsRoleType
-from app.schemas.common import SuccessMessageResponse
-from app.dependencies.auth import (required_manager_or_higher,
-                                   id_from_access_token, required_member_or_higher)
+from app.dependencies.auth import (
+    id_from_access_token,
+    required_manager_or_higher,
+    required_member_or_higher,
+)
 from app.dependencies.teams import teams_service
+from app.schemas.common import SuccessMessageResponse
+from app.schemas.teams import (
+    CreateInviteResponse,
+    GetMembershipResponse,
+    JoinTeamRequest,
+)
+from app.schemas.types import IdType, TeamsRoleType
 from app.services.teams import TeamsService
-
 
 router = APIRouter(tags=["teams"])
 

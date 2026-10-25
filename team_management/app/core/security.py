@@ -1,15 +1,12 @@
-import jwt
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
+import jwt
 from cryptography.hazmat.primitives.asymmetric import ed25519
 from pwdlib import PasswordHash
 
 from app.core.config import settings
-
-from app.schemas.auth import (AccessTokensPayload,
-                              Tokens)
-
+from app.schemas.auth import AccessTokensPayload, Tokens
 
 private_key_bytes = bytes.fromhex(settings.app.PRIVATE_KEY_HEX)
 
@@ -27,7 +24,7 @@ def verify_password(raw_password: str, hash_password: str) -> bool:
 
 
 def create_tokens(user_id: uuid.UUID) -> Tokens:
-    now_unix = int(datetime.now(timezone.utc).timestamp())
+    now_unix = int(datetime.now(UTC).timestamp())
     exp_access_unix = settings.app.access_tokens_ttl + now_unix
 
     json_access_payload = AccessTokensPayload(

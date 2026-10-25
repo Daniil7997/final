@@ -1,7 +1,6 @@
-import sys
 import logging
+import sys
 from logging.handlers import RotatingFileHandler
-
 
 file_handler = RotatingFileHandler(
     filename="team_management.log",

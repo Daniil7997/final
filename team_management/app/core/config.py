@@ -2,7 +2,6 @@ import logging
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-
 log = logging.getLogger('CONFIG')
 
 
@@ -36,10 +35,7 @@ class DatabaseSettings(SharedConfig):
 
     @property
     def ready_for_test(self) -> bool:
-        if self.IS_TEST_DB is True and 'test' in self.DB_NAME.lower():
-            return True
-        else:
-            return False
+        return bool(self.IS_TEST_DB is True and 'test' in self.DB_NAME.lower())
 
 
 class RedisSettings(SharedConfig):
@@ -70,7 +66,7 @@ class ApplicationSettings(SharedConfig):
         return 72 * 60 * 60
 
 
-class AggregateSettings():
+class AggregateSettings:
     def __init__(self) -> None:
         self.db = DatabaseSettings()  # type: ignore[call-arg]
         self.redis = RedisSettings()  # type: ignore[call-arg]

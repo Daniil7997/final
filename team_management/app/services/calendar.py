@@ -1,8 +1,8 @@
 import datetime as dt
 
-from app.services.base import BaseService
 from app.schemas.calendar import GetCalendarResponse
 from app.schemas.types import IdType
+from app.services.base import BaseService
 
 
 class CalendarService(BaseService):

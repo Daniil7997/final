@@ -2,9 +2,7 @@ import datetime as dt
 
 from pydantic import BaseModel
 
-from app.schemas.types import (IdType,
-                               TaskDescriptionType,
-                               TaskStatusType)
+from app.schemas.types import IdType, TaskDescriptionType, TaskStatusType
 
 
 # ======================================================

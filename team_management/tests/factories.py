@@ -1,29 +1,24 @@
-import typing
 import datetime as dt
+import typing
 
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import (select,
-                        Select,
-                        Update,
-                        Delete)
-from sqlalchemy.sql import func
+from sqlalchemy import Delete, Select, Update, select
 from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.sql import func
 
-from app.core.infrastructure.db.models.users import Users
-from app.core.infrastructure.db.models.teams import (
-    Teams,
-    TeamMembership,
-    TeamsRoles
-    )
-from app.core.infrastructure.db.models.tasks import Tasks, TasksComments
 from app.core.infrastructure.db.models.evaluations import Evaluations
 from app.core.infrastructure.db.models.meetings import (
     Meetings,
-    MeetingsParticipants
-    )
-
+    MeetingsParticipants,
+)
+from app.core.infrastructure.db.models.tasks import Tasks, TasksComments
+from app.core.infrastructure.db.models.teams import (
+    TeamMembership,
+    Teams,
+    TeamsRoles,
+)
+from app.core.infrastructure.db.models.users import Users
 from app.schemas.types import IdType
-
 
 T_Stmt = typing.TypeVar("T_Stmt", Select, Update, Delete)
 

@@ -1,9 +1,11 @@
 from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
 
-from app.core.infrastructure.exceptions import (InviteStorageUnavailableError,
-                                                InviteStorageNotConnectedError,
-                                                TokensBlacklistUnavailableError)
+from app.core.infrastructure.exceptions import (
+    InviteStorageNotConnectedError,
+    InviteStorageUnavailableError,
+    TokensBlacklistUnavailableError,
+)
 
 
 def register_infrastructure_errors_handlers(app: FastAPI) -> None:
@@ -33,7 +35,7 @@ def register_infrastructure_errors_handlers(app: FastAPI) -> None:
             )
 
     @app.exception_handler(TokensBlacklistUnavailableError)
-    async def handle_invite_storage_not_connected(
+    async def handle_token_blacklist_unavailable(
         request: Request,
         exc: TokensBlacklistUnavailableError
     ) -> JSONResponse:

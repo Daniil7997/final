@@ -1,12 +1,14 @@
 from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
 
-from app.domain.teams.exceptions import (TeamNameAlreadyExistError,
-                                         TeamNotFoundError,
-                                         InviteNotFoundError,
-                                         TeamMembershipRequiredError,
-                                         TeamMemberNotFoundError,
-                                         LowActorRolePrivilegeError)
+from app.domain.teams.exceptions import (
+    InviteNotFoundError,
+    LowActorRolePrivilegeError,
+    TeamMemberNotFoundError,
+    TeamMembershipRequiredError,
+    TeamNameAlreadyExistError,
+    TeamNotFoundError,
+)
 
 
 def register_teams_errors_handlers(app: FastAPI) -> None:

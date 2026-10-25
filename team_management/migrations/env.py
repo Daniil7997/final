@@ -1,20 +1,22 @@
 import asyncio
 from logging.config import fileConfig
 
+import alembic_postgresql_enum  # noqa F401
+from alembic import context
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
-from alembic import context
-import alembic_postgresql_enum # noqa F401
 
 from app.core.config import settings
 from app.core.infrastructure.db.models.base import Base
-from app.core.infrastructure.db.models.users import Users  # noqa F401
-from app.core.infrastructure.db.models.teams import Teams  # noqa F401
-from app.core.infrastructure.db.models.tasks import Tasks, TasksComments  # noqa F401
-from app.core.infrastructure.db.models.meetings import Meetings, MeetingsParticipants  # noqa F401
 from app.core.infrastructure.db.models.evaluations import Evaluations  # noqa F401
-
+from app.core.infrastructure.db.models.meetings import (  # noqa F401
+    Meetings,
+    MeetingsParticipants,
+)
+from app.core.infrastructure.db.models.tasks import Tasks, TasksComments  # noqa F401
+from app.core.infrastructure.db.models.teams import Teams  # noqa F401
+from app.core.infrastructure.db.models.users import Users  # noqa F401
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

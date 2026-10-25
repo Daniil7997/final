@@ -3,8 +3,8 @@ from typing import Annotated
 from fastapi import Depends
 
 from app.core.infrastructure.unit_of_work import UnitOfWork
-from app.services.teams import TeamsService
 from app.dependencies.db import get_unit_of_work
+from app.services.teams import TeamsService
 
 
 def teams_service(

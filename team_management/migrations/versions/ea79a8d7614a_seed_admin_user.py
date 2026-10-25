@@ -5,24 +5,23 @@ Revises: 4a3ee906c3af
 Create Date: 2026-10-23 21:25:12.610889
 
 """
-from typing import Sequence, Union
-import uuid
 import datetime as dt
+import uuid
+from collections.abc import Sequence
 
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 
 from app.core.config import settings
 
-
 # revision identifiers, used by Alembic.
 revision: str = 'ea79a8d7614a'
-down_revision: Union[str, Sequence[str], None] = '4a3ee906c3af'
-branch_labels: Union[str, Sequence[str], None] = None
-depends_on: Union[str, Sequence[str], None] = None
+down_revision: str | Sequence[str] | None = '4a3ee906c3af'
+branch_labels: str | Sequence[str] | None = None
+depends_on: str | Sequence[str] | None = None
 
 
-now = dt.datetime.now(dt.timezone.utc)
+now = dt.datetime.now(dt.UTC)
 
 
 def upgrade():
@@ -58,4 +57,3 @@ def upgrade():
 
 def downgrade() -> None:
     """Downgrade schema."""
-    pass

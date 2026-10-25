@@ -1,19 +1,21 @@
+import typing
 import uuid
 from datetime import datetime
-import typing
 
-from sqlalchemy.orm import (Mapped,
-                            mapped_column,
-                            relationship)
-from sqlalchemy import (CheckConstraint, DateTime, ForeignKey,
-                        String, UniqueConstraint)
+from sqlalchemy import (
+    CheckConstraint,
+    DateTime,
+    ForeignKey,
+    String,
+    UniqueConstraint,
+)
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.infrastructure.db.models.base import Base
 
-
 if typing.TYPE_CHECKING:
-    from app.core.infrastructure.db.models.users import Users
     from app.core.infrastructure.db.models.teams import Teams
+    from app.core.infrastructure.db.models.users import Users
 
 
 class MeetingsParticipants(Base):
@@ -48,12 +50,12 @@ class Meetings(Base, kw_only=True):
     )
 
     # ----- RELATIONSHIP -----
-    users: Mapped[list['Users']] = relationship(
+    users: Mapped[list[Users]] = relationship(
         secondary=MeetingsParticipants.__table__,
         back_populates='meetings',
         init=False
     )
-    team: Mapped['Teams'] = relationship(
+    team: Mapped[Teams] = relationship(
         back_populates='meetings',
         init=False
     )

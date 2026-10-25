@@ -1,19 +1,25 @@
 from sqlalchemy.exc import IntegrityError
 
-from app.services.base import BaseService
-from app.schemas.meetings import (CreateMeetingRequest,
-                                  CreateMeetingsResponse,
-                                  AddUserToMeetingRequest,
-                                  GetTeamMeetingsResponse)
-from app.schemas.types import IdType
-from app.domain.teams.exceptions import (TeamMembershipRequiredError,
-                                         TeamNotFoundError)
-from app.domain.meetings.exceptions import (MeetingsOverlapError,
-                                            InvalidMeetingTimeRangeError,
-                                            MeetingNotFoundError,
-                                            UserAlreadyInMeetingError)
-from app.domain.users.exceptions import UserNotFoundError
 from app.core.infrastructure.db.codes import DBIntegrityState
+from app.domain.meetings.exceptions import (
+    InvalidMeetingTimeRangeError,
+    MeetingNotFoundError,
+    MeetingsOverlapError,
+    UserAlreadyInMeetingError,
+)
+from app.domain.teams.exceptions import (
+    TeamMembershipRequiredError,
+    TeamNotFoundError,
+)
+from app.domain.users.exceptions import UserNotFoundError
+from app.schemas.meetings import (
+    AddUserToMeetingRequest,
+    CreateMeetingRequest,
+    CreateMeetingsResponse,
+    GetTeamMeetingsResponse,
+)
+from app.schemas.types import IdType
+from app.services.base import BaseService
 
 
 class MeetingsService(BaseService):

@@ -1,11 +1,10 @@
 from app.core.infrastructure.db.models.tasks import TaskStatus
-from app.schemas.structural import TaskSchema
-from app.services.base import BaseService
-from app.schemas.evaluations import (CreateEvaluationsRequest,
-                                     GetAvgEvaluation)
-from app.schemas.types import IdType
-from app.domain.tasks.exceptions import TaskNotFoundError, TaskNotDoneError
 from app.domain.evaluations.exceptions import EvaluationsNotFoundError
+from app.domain.tasks.exceptions import TaskNotDoneError, TaskNotFoundError
+from app.schemas.evaluations import CreateEvaluationsRequest, GetAvgEvaluation
+from app.schemas.structural import TaskSchema
+from app.schemas.types import IdType
+from app.services.base import BaseService
 
 
 class EvaluationsService(BaseService):

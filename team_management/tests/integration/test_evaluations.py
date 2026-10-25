@@ -1,16 +1,16 @@
-from datetime import timedelta, date
+from datetime import date, timedelta
 
 import pytest
-from httpx import AsyncClient
 from fastapi import status
-from sqlalchemy.ext.asyncio import AsyncSession
+from httpx import AsyncClient
 from sqlalchemy import select, update
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.infrastructure.db.models.users import Users
-from app.core.infrastructure.db.models.teams import Teams
-from app.core.infrastructure.db.models.tasks import Tasks, TaskStatus
-from app.schemas.auth import Tokens
 from app.core.infrastructure.db.models.evaluations import Evaluations
+from app.core.infrastructure.db.models.tasks import Tasks, TaskStatus
+from app.core.infrastructure.db.models.teams import Teams
+from app.core.infrastructure.db.models.users import Users
+from app.schemas.auth import Tokens
 
 
 class TestCreateEvaluation:

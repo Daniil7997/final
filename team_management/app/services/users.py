@@ -1,8 +1,8 @@
-from app.services.base import BaseService
-from app.schemas.users import GetProfileResponse
-from app.schemas.types import IdType
-from app.schemas.structural import UsersSchema
 from app.domain.users.exceptions import UserNotFoundError
+from app.schemas.structural import UsersSchema
+from app.schemas.types import IdType
+from app.schemas.users import GetProfileResponse
+from app.services.base import BaseService
 
 
 class UsersService(BaseService):
