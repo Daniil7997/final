@@ -20,7 +20,6 @@ class MeetingsService(BaseService):
 
     async def create_meeting(
             self,
-            actor_id: IdType,
             team_id: IdType,
             data: CreateMeetingRequest
             ) -> CreateMeetingsResponse:

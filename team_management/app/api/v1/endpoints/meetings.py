@@ -12,8 +12,7 @@ from app.schemas.meetings import (CreateMeetingRequest,
                                   GetTeamMeetingsResponse)
 from app.schemas.types import IdType, TeamsRoleType
 from app.schemas.common import SuccessMessageResponse
-from app.dependencies.auth import (required_manager_or_higher,
-                                   id_from_access_token)
+from app.dependencies.auth import required_manager_or_higher
 from app.dependencies.meetings import meetings_service
 from app.services.meetings import MeetingsService
 
@@ -26,14 +25,11 @@ router = APIRouter(tags=["meetings"])
              status_code=status.HTTP_201_CREATED)
 async def create_meeting(
     actor_role: Annotated[TeamsRoleType, Depends(required_manager_or_higher)],
-    actor_id: Annotated[IdType, Depends(id_from_access_token)],
     team_id: Annotated[IdType, Path()],
     data: Annotated[CreateMeetingRequest, Body()],
     service: Annotated[MeetingsService, Depends(meetings_service)]
 ) -> CreateMeetingsResponse:
-    return await service.create_meeting(data=data,
-                                        team_id=team_id,
-                                        actor_id=actor_id)
+    return await service.create_meeting(data=data, team_id=team_id)
 
 
 @router.post('/teams/{team_id}/meetings/{meeting_id}',
