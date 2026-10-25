@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
 from app.core.infrastructure.db.models.users import Users
-from app.core.infrastructure.db.models.teams import Teams, TeamsRoles
+from app.core.infrastructure.db.models.teams import Teams
 from app.core.security import create_tokens, hash_password
 from app.schemas.auth import Tokens
 from app.core.infrastructure.storage.invite import invite_storage
@@ -17,11 +17,13 @@ class TestCreateInvite:
 
     @pytest.mark.integration
     @pytest.mark.asyncio
-    async def test_create_team_invite(self,
-                                      async_client: AsyncClient,
-                                      api_prefix: str,
-                                      manager_tokens: Tokens,
-                                      team: Teams):
+    async def test_create_team_invite(
+            self,
+            async_client: AsyncClient,
+            api_prefix: str,
+            manager_tokens: Tokens,
+            team: Teams
+            ):
         response = await async_client.post(
             url=f'{api_prefix}/teams/{team.id}/invites',
             headers={"Authorization": f"Bearer {manager_tokens.access}"}
@@ -34,6 +36,21 @@ class TestCreateInvite:
         storage_team_id = await invite_storage.get(response_invite_code)
         assert str(storage_team_id) == str(team.id)
         assert data['invite_code_ttl'] == settings.app.invite_code_ttl
+
+    @pytest.mark.integration
+    @pytest.mark.asyncio
+    async def test_create_team_invite_actor_no_team(
+            self,
+            async_client: AsyncClient,
+            api_prefix: str,
+            user_no_team_tokens: Tokens,
+            team: Teams
+            ):
+        response = await async_client.post(
+            url=f'{api_prefix}/teams/{team.id}/invites',
+            headers={"Authorization": f"Bearer {user_no_team_tokens.access}"}
+        )
+        assert response.status_code == status.HTTP_403_FORBIDDEN
 
 
 class TestJoinTeam:
@@ -103,3 +120,28 @@ class TestRemoveMember:
 
         check_after_rm = await test_session.scalar(check_stmt)
         assert check_after_rm is None
+
+    @pytest.mark.integration
+    @pytest.mark.asyncio
+    async def test_remove_team_member_actor_no_team(
+            self,
+            async_client: AsyncClient,
+            api_prefix: str,
+            user_no_team_tokens: Tokens,
+            team: Teams,
+            user_member: Users,
+            test_session: AsyncSession
+            ):
+        check_stmt = (select(TeamMembership)
+                      .where(TeamMembership.team_id==team.id,
+                             TeamMembership.user_id==user_member.id))
+        check_before_rm = await test_session.scalar(check_stmt)
+        assert check_before_rm is not None
+        assert check_before_rm.user_id == user_member.id
+        assert check_before_rm.team_id == team.id
+
+        rm_response = await async_client.delete(
+            url=f'{api_prefix}/teams/{team.id}/members/{user_member.id}',
+            headers={"Authorization": f"Bearer {user_no_team_tokens.access}"}
+        )
+        assert rm_response.status_code == status.HTTP_403_FORBIDDEN
