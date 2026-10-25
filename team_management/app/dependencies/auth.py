@@ -29,7 +29,7 @@ def auth_service(
 
 def str_token_from_header(
         token: Annotated[HTTPAuthorizationCredentials, Depends(auth_scheme)]
-) -> HTTPAuthorizationCredentials:
+) -> str:
     return str(token)
 
 
