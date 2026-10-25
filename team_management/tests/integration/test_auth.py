@@ -124,3 +124,26 @@ class TestTokens:
             }
         )
         assert tokens_response.status_code == status.HTTP_401_UNAUTHORIZED
+
+
+class TestLogout:
+
+    @pytest.mark.integration
+    @pytest.mark.asyncio
+    async def test_logout(
+            self,
+            async_client: AsyncClient,
+            api_prefix: str,
+            user_no_team_tokens: Tokens
+            ):
+        logout_response = await async_client.post(
+            url=f'{api_prefix}/logout',
+            headers={"Authorization": f"Bearer {user_no_team_tokens.access}"}
+        )
+        assert logout_response.status_code == status.HTTP_200_OK
+
+        profile_response = await async_client.post(
+            url=f'{api_prefix}/logout',
+            headers={"Authorization": f"Bearer {user_no_team_tokens.access}"}
+        )
+        assert profile_response.status_code == status.HTTP_401_UNAUTHORIZED
