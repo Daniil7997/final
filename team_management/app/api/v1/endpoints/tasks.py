@@ -106,6 +106,7 @@ async def change_task_status_by_id(
              response_model=SuccessMessageResponse,
              status_code=status.HTTP_201_CREATED)
 async def create_comment(
+    team_role: Annotated[TeamsRoleType, Depends(required_manager_or_higher)],
     task_id: Annotated[IdType, Path()],
     actor_id: Annotated[IdType, Depends(id_from_access_token)],
     data: Annotated[CreateTaskCommentRequest, Body()],
