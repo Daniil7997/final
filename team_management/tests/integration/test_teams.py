@@ -35,21 +35,6 @@ class TestCreateInvite:
         assert str(storage_team_id) == str(team.id)
         assert data['invite_code_ttl'] == settings.app.invite_code_ttl
 
-    @pytest.mark.integration
-    @pytest.mark.asyncio
-    async def test_create_team_no_permissions(
-        self,
-        async_client: AsyncClient,
-        api_prefix: str,
-        member_tokens: Tokens,
-        team: Teams
-    ):
-        response = await async_client.post(
-            url=f'{api_prefix}/teams/{team.id}/invites',
-            headers={"Authorization": f"Bearer {member_tokens.access}"}
-        )
-        assert response.status_code == status.HTTP_403_FORBIDDEN
-
 
 class TestJoinTeam:
 

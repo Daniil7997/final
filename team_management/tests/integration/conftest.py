@@ -16,7 +16,7 @@ from app.core.security import hash_password, create_tokens
 from app.main import application
 from app.dependencies.db import get_session
 from app.core.infrastructure.db.models.users import Users
-from app.core.infrastructure.db.models.teams import Teams, TeamsRoles
+from app.core.infrastructure.db.models.teams import Teams
 from app.core.infrastructure.db.models.tasks import Tasks
 from app.core.infrastructure.db.models.meetings import Meetings
 from app.core.infrastructure.storage.invite import invite_storage
@@ -85,9 +85,22 @@ async def user_admin(aggregate_factory: AggregateFactory):
     hashed_password = hash_password(password)
     user = await aggregate_factory.users.create_user(
         email=f"{uuid.uuid4()}@gmail.com",
-        name="Ivan",
+        name="IvanAdmin",
         hashed_password=hashed_password,
         is_admin=True
+        )
+    user.password = password
+    return user
+
+
+@pytest.fixture(scope='function')
+async def user_no_team(aggregate_factory: AggregateFactory):
+    password = "secret123"
+    hashed_password = hash_password(password)
+    user = await aggregate_factory.users.create_user(
+        email=f"{uuid.uuid4()}@gmail.com",
+        name="IvanNoTeam",
+        hashed_password=hashed_password
         )
     user.password = password
     return user
@@ -100,7 +113,7 @@ async def user_member(aggregate_factory: AggregateFactory,
     hashed_password = hash_password(password)
     user = await aggregate_factory.users.create_user(
         email=f"{uuid.uuid4()}@gmail.com",
-        name="Ivan",
+        name="IvanTeamMember",
         hashed_password=hashed_password
         )
     await aggregate_factory.teams.join_team(team_id=team.id, user_id=user.id)
@@ -121,7 +134,7 @@ async def _user_manager(aggregate_factory: AggregateFactory):
     hashed_password = hash_password(password)
     user = await aggregate_factory.users.create_user(
         email=f"{uuid.uuid4()}@gmail.com",
-        name="Ivan",
+        name="IvanTeamManager",
         hashed_password=hashed_password
         )
     user.password = password
@@ -141,6 +154,11 @@ def manager_tokens(user_manager: Users):
 @pytest.fixture(scope='function')
 def admin_tokens(user_admin: Users):
     return create_tokens(user_id=user_admin.id)
+
+
+@pytest.fixture(scope='function')
+def user_no_team_tokens(user_no_team: Users):
+    return create_tokens(user_id=user_no_team.id)
 
 
 @pytest.fixture(scope='function')
