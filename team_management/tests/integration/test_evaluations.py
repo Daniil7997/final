@@ -50,21 +50,57 @@ class TestCreateEvaluation:
         db_evaluation = await test_session.scalar(stmt_check_evaluation)
         assert db_evaluation is not None
 
+    @pytest.mark.integration
+    @pytest.mark.asyncio
+    async def test_rate_task_actor_no_team(
+        self,
+        async_client: AsyncClient,
+        api_prefix: str,
+        user_no_team_tokens: Tokens,
+        user_member: Users,
+        team: Teams,
+        task: Tasks,
+        test_session: AsyncSession
+    ):
+        stmt_assignee = (update(Tasks)
+                         .where(Tasks.id == task.id)
+                         .values(assignee_id=user_member.id,
+                                 status=TaskStatus.done))
+        await test_session.execute(stmt_assignee)
+        stmt_check_evaluation = (select(Evaluations)
+                                 .where(Evaluations.task_id == task.id))
+        db_evaluation = await test_session.scalar(stmt_check_evaluation)
+        assert db_evaluation is None
+
+        response = await async_client.post(
+            url=f'{api_prefix}/teams/{team.id}/tasks/{task.id}/evaluations',
+            json={
+                "comment_text": "good job",
+                "grade": 4,
+            },
+            headers={"Authorization": f"Bearer {user_no_team_tokens.access}"}
+        )
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+
+        db_evaluation = await test_session.scalar(stmt_check_evaluation)
+        assert db_evaluation is None
+
+
 
 class TestGetEvaluation:
 
     @pytest.mark.integration
     @pytest.mark.asyncio
-    async def test_rate_task(
-        self,
-        async_client: AsyncClient,
-        api_prefix: str,
-        member_tokens: Tokens,
-        user_manager: Users,
-        user_member: Users,
-        team: Teams,
-        test_session: AsyncSession
-    ):
+    async def test_avg_evaluations_task(
+            self,
+            async_client: AsyncClient,
+            api_prefix: str,
+            member_tokens: Tokens,
+            user_manager: Users,
+            user_member: Users,
+            team: Teams,
+            test_session: AsyncSession
+            ):
         due_date = date.today() + timedelta(days=2)
 
         task1 = Tasks(creator_id=user_manager.id,
