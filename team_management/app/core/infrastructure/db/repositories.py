@@ -6,7 +6,6 @@ from sqlalchemy import (
     Select,
     Update,
     delete,
-    exists,
     select,
     text,
     update,
