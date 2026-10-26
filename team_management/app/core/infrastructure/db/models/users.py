@@ -18,7 +18,8 @@ class Users(Base):
                                       nullable=False)
     email: Mapped[str] = mapped_column(String(50),
                                        unique=True,
-                                       nullable=False)
+                                       nullable=False,
+                                       index=True)
     password: Mapped[str] = mapped_column(String(255),
                                           nullable=False)
     is_admin: Mapped[bool] = mapped_column(default=False,

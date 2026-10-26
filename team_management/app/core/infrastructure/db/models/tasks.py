@@ -30,7 +30,7 @@ class Tasks(Base, kw_only=True):
         default=TaskStatus.open,
         nullable=False
         )
-    due_date: Mapped[date] = mapped_column(nullable=False)
+    due_date: Mapped[date] = mapped_column(nullable=False, index=True)
     verification_url: Mapped[str | None] = mapped_column(String(500),
                                                          default=None,
                                                          init=False)
@@ -42,11 +42,13 @@ class Tasks(Base, kw_only=True):
     assignee_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey('users.id', ondelete='CASCADE'),
-        default=None
+        default=None,
+        index=True
     )
     team_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
-        ForeignKey('teams.id', ondelete='CASCADE')
+        ForeignKey('teams.id', ondelete='CASCADE'),
+        index=True
     )
 
     # ------ RELATIONSHIP ------
@@ -83,11 +85,13 @@ class TasksComments(Base, kw_only=True):
 
     task_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
-        ForeignKey('tasks.id', ondelete='CASCADE')
+        ForeignKey('tasks.id', ondelete='CASCADE'),
+        index=True
     )
     author_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
-        ForeignKey('users.id', ondelete='CASCADE')
+        ForeignKey('users.id', ondelete='CASCADE'),
+        index=True
     )
     comment: Mapped[str] = mapped_column(String(2000))
 

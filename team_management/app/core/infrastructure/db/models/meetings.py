@@ -23,10 +23,12 @@ class MeetingsParticipants(Base):
 
     # ------ ForeignKey ------
     user_id: Mapped[uuid.UUID] = mapped_column(
-        ForeignKey('users.id', ondelete='CASCADE')
+        ForeignKey('users.id', ondelete='CASCADE'),
+        index=True
         )
     meeting_id: Mapped[uuid.UUID] = mapped_column(
-        ForeignKey('meetings.id', ondelete='CASCADE')
+        ForeignKey('meetings.id', ondelete='CASCADE'),
+        index=True
         )
 
     __table_args__ = (
@@ -41,12 +43,15 @@ class Meetings(Base, kw_only=True):
                                                     nullable=True,
                                                     default=None)
 
-    start_meeting: Mapped[datetime] = mapped_column(DateTime(timezone=True))
-    end_meeting: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    start_meeting: Mapped[datetime] = mapped_column(DateTime(timezone=True),
+                                                    index=True)
+    end_meeting: Mapped[datetime] = mapped_column(DateTime(timezone=True),
+                                                  index=True)
 
     # ----- FOREIGNKEY -----
     team_id: Mapped[uuid.UUID] = mapped_column(
-        ForeignKey('teams.id', ondelete='CASCADE')
+        ForeignKey('teams.id', ondelete='CASCADE'),
+        index=True
     )
 
     # ----- RELATIONSHIP -----

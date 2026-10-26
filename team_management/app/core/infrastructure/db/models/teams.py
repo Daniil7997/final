@@ -2,7 +2,7 @@ import enum
 import typing
 import uuid
 
-from sqlalchemy import UUID, Enum, ForeignKey, String, UniqueConstraint
+from sqlalchemy import UUID, Enum, ForeignKey, Index, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.infrastructure.db.models.base import Base
@@ -96,7 +96,7 @@ class TeamMembership(Base, kw_only=True):
         )
     team_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
-        ForeignKey('teams.id', ondelete='CASCADE')
+        ForeignKey('teams.id', ondelete='CASCADE'),
         )
 
     # ------ RELATIONSHIP ------
@@ -115,4 +115,5 @@ class TeamMembership(Base, kw_only=True):
 
     __table_args__ = (
         UniqueConstraint("user_id", "team_id", name="uс_user_id_team_id"),
+        Index('idx_team_user', 'team_id', 'user_id'),
     )

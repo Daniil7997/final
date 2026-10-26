@@ -29,11 +29,13 @@ class Evaluations(Base, kw_only=True):
     )
     author_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
-        ForeignKey('users.id', ondelete='CASCADE')
+        ForeignKey('users.id', ondelete='CASCADE'),
+        index=True
     )
     task_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
-        ForeignKey('tasks.id', ondelete='CASCADE')
+        ForeignKey('tasks.id', ondelete='CASCADE'),
+        index=True
     )
     # ------ RELATIONSHIP ------
     # Users
