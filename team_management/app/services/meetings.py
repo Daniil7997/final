@@ -7,6 +7,7 @@ from app.domain.meetings.exceptions import (
     MeetingsOverlapError,
     UserAlreadyInMeetingError,
 )
+from app.domain.meetings.rules import check_overlap
 from app.domain.teams.exceptions import (
     TeamMembershipRequiredError,
     TeamNotFoundError,
@@ -45,11 +46,26 @@ class MeetingsService(BaseService):
 
                 elif sqlstate == DBIntegrityState.CHECK_VIOLATION:
                     raise InvalidMeetingTimeRangeError()
-            if data.user_id is None:
+            if data.users_id is None:
                 return CreateMeetingsResponse(meeting_id=meeting_id)
+            await uow.advisory_lock_from_list_uuid(data.users_id)
+            user_in_team = await uow.teams.check_users_in_team(
+                users_id=data.users_id,
+                team_id=team_id,
+                )
+            if not user_in_team:
+                raise TeamMembershipRequiredError()
+            existed_meetings = await uow.meetings.get_users_meetings(
+                users_id=data.users_id
+                )
+            check_overlap(
+                new_start=data.start_meeting,
+                new_end=data.end_meeting,
+                meetings=existed_meetings
+            )
             try:
                 await uow.meetings.join_meeting(
-                    user_id=data.user_id,
+                    user_id=data.users_id,
                     meeting_id=meeting_id
                     )
             except IntegrityError as e:
@@ -70,12 +86,11 @@ class MeetingsService(BaseService):
             data: AddUserToMeetingRequest,
     ) -> None:
         async with self.unit_of_work as uow:
-            lock_key = uow.key_factory.uuid_to_bigint(data.user_id)
-            await uow.locker.lock(lock_key)
-            user_in_team = await uow.teams.check_user_in_team(
-                user_id=data.user_id,
+            await uow.advisory_lock_from_list_uuid(data.users_id)
+            user_in_team = await uow.teams.check_users_in_team(
+                users_id=data.users_id,
                 team_id=team_id,
-            )
+                )
             if not user_in_team:
                 raise TeamMembershipRequiredError()
             meeting_data = await uow.meetings.get_meeting_by_meeting_id(
@@ -83,15 +98,17 @@ class MeetingsService(BaseService):
                 )
             if meeting_data is None:
                 raise MeetingNotFoundError()
-            overlap = await uow.meetings.check_overlap_meetings(
-                user_id=data.user_id,
-                start_meeting=meeting_data.start_meeting,
-                end_meeting=meeting_data.end_meeting)
-            if overlap:
-                raise MeetingsOverlapError()
+            existed_meetings = await uow.meetings.get_users_meetings(
+                users_id=data.users_id
+                )
+            check_overlap(
+                new_start=meeting_data.start_meeting,
+                new_end=meeting_data.end_meeting,
+                meetings=existed_meetings
+                )
             try:
                 await uow.meetings.join_meeting(
-                    user_id=data.user_id,
+                    user_id=data.users_id,
                     meeting_id=meeting_id
                     )
             except IntegrityError as e:

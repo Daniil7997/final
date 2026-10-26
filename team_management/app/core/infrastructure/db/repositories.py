@@ -142,16 +142,14 @@ class TeamsRepo(BaseRepo):
         team = await self.session.execute(stmt)
         return TeamsSchema.model_validate(team)
 
-    async def check_user_in_team(self,
-                                 user_id: IdType,
+    async def check_users_in_team(self,
+                                 users_id: list[IdType],
                                  team_id: IdType) -> bool:
-        stmt = select(
-            exists().where(
-                TeamMembership.team_id == team_id,
-                TeamMembership.user_id == user_id
-            )
-        )
-        return bool(await self.session.scalar(stmt))
+        stmt = (select(func.count(TeamMembership.user_id))
+                .where(TeamMembership.team_id == team_id,
+                       TeamMembership.user_id.in_(users_id)))
+        count_user_in_team = await self.session.scalar(stmt)
+        return count_user_in_team == len(users_id)
 
     async def get_team_membership_by_team_id(
             self,
@@ -345,23 +343,6 @@ class MeetingsRepo(BaseRepo):
                           Meetings.start_meeting <= end_meeting)
         return stmt
 
-    async def check_overlap_meetings(self,
-                                     user_id: IdType,
-                                     start_meeting: dt.datetime,
-                                     end_meeting: dt.datetime) -> bool:
-        stmt = select(
-            exists(
-                select(1)
-                .select_from(MeetingsParticipants)
-                .join(Meetings, MeetingsParticipants.meeting_id == Meetings.id)
-                .where(MeetingsParticipants.user_id == user_id,
-                       Meetings.start_meeting < end_meeting,
-                       Meetings.end_meeting > start_meeting)
-                )
-            )
-        res = await self.session.scalar(stmt)
-        return bool(res)
-
     async def get_meeting_if_user_in_team(
             self,
             user_id: IdType,
@@ -409,18 +390,11 @@ class MeetingsRepo(BaseRepo):
         return meeting_obj.id
 
     async def join_meeting(self,
-                           user_id: list[IdType] | tuple[IdType] | IdType,
+                           user_id: list[IdType],
                            meeting_id: IdType) -> None:
-        if isinstance(user_id, (list, tuple)):
-            for u_id in user_id:
-                user_in_meeting = MeetingsParticipants(
-                    user_id=u_id,
-                    meeting_id=meeting_id
-                )
-                self.session.add(user_in_meeting)
-        else:
+        for u_id in user_id:
             user_in_meeting = MeetingsParticipants(
-                user_id=user_id,
+                user_id=u_id,
                 meeting_id=meeting_id
             )
             self.session.add(user_in_meeting)
@@ -469,8 +443,18 @@ class MeetingsRepo(BaseRepo):
             ) -> MeetingsSchema | None:
         stmt = (select(Meetings)
                 .where(Meetings.id == meeting_id))
-        result = await self.session.execute(stmt)
-        meeting = result.scalar_one_or_none()
+        meeting = await self.session.scalar(stmt)
         if meeting is None:
             return None
         return MeetingsSchema.model_validate(meeting)
+
+    async def get_users_meetings(
+            self,
+            users_id: list[IdType]
+            ) -> list[MeetingsSchema]:
+        stmt = (select(Meetings)
+                .join(MeetingsParticipants,
+                      MeetingsParticipants.meeting_id == Meetings.id)
+                .where(MeetingsParticipants.user_id.in_(users_id)))
+        meetings = await self.session.scalars(stmt)
+        return [MeetingsSchema.model_validate(m) for m in meetings]

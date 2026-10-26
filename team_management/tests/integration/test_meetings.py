@@ -19,12 +19,14 @@ class TestCreateMeeting:
 
     @pytest.mark.integration
     @pytest.mark.asyncio
-    async def test_create_meeting(self,
-                                  async_client: AsyncClient,
-                                  api_prefix: str,
-                                  manager_tokens: Tokens,
-                                  team: Teams,
-                                  test_session: AsyncSession):
+    async def test_create_meeting(
+            self,
+            async_client: AsyncClient,
+            api_prefix: str,
+            manager_tokens: Tokens,
+            team: Teams,
+            test_session: AsyncSession
+            ):
         stmt = (select(Meetings)
                 .where(Meetings.team_id == team.id))
         db_meeting = await test_session.scalar(stmt)
@@ -39,7 +41,8 @@ class TestCreateMeeting:
             json={
                 "description": description,
                 "start_meeting": start_meeting.isoformat(),
-                "end_meeting": end_meeting.isoformat()
+                "end_meeting": end_meeting.isoformat(),
+                "users_id": None
             },
             headers={"Authorization": f"Bearer {manager_tokens.access}"}
         )
@@ -108,7 +111,8 @@ class TestCreateMeeting:
             json={
                 "description": description,
                 "start_meeting": start_meeting.isoformat(),
-                "end_meeting": end_meeting.isoformat()
+                "end_meeting": end_meeting.isoformat(),
+                "users_id": None
             },
             headers={"Authorization": f"Bearer {manager_tokens.access}"}
         )
@@ -138,7 +142,7 @@ class TestAddUserToMeeting:
         response = await async_client.post(
             url=f'{api_prefix}/teams/{team.id}/meetings/{meeting.id}',
             json={
-                "user_id": str(user_member.id),
+                "users_id": [str(user_member.id)],
             },
             headers={"Authorization": f"Bearer {manager_tokens.access}"}
         )
@@ -206,7 +210,7 @@ class TestAddUserToMeeting:
         response = await async_client.post(
             url=f'{api_prefix}/teams/{team.id}/meetings/{meeting.id}',
             json={
-                "user_id": str(user_member.id),
+                "users_id": [str(user_member.id)],
             },
             headers={"Authorization": f"Bearer {manager_tokens.access}"}
         )
