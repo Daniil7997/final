@@ -449,11 +449,15 @@ class MeetingsRepo(BaseRepo):
 
     async def get_users_meetings(
             self,
-            users_id: list[IdType]
+            users_id: list[IdType],
+            from_date: dt.datetime | None = None
             ) -> list[MeetingsSchema]:
+        if from_date is None:
+            from_date = dt.datetime.now(dt.UTC) - dt.timedelta(days=2)
         stmt = (select(Meetings)
                 .join(MeetingsParticipants,
                       MeetingsParticipants.meeting_id == Meetings.id)
-                .where(MeetingsParticipants.user_id.in_(users_id)))
+                .where(MeetingsParticipants.user_id.in_(users_id),
+                       Meetings.start_meeting>=from_date))
         meetings = await self.session.scalars(stmt)
         return [MeetingsSchema.model_validate(m) for m in meetings]
