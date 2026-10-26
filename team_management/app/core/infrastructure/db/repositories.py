@@ -48,7 +48,7 @@ class BaseRepo:
         self.session = session
 
     def _only_active_users(self, stmt: T_Stmt) -> T_Stmt:
-        stmt = stmt.where(Users.is_active == True)
+        stmt = stmt.where(Users.is_active)
         return stmt
 
 
@@ -108,7 +108,7 @@ class UsersRepo(BaseRepo):
 
     async def check_is_admin(self, user_id: IdType) -> bool | None:
         stmt = (select(Users.is_admin)
-                .where(Users.id==user_id))
+                .where(Users.id == user_id))
         is_admin = await self.session.scalar(stmt)
         return is_admin
 
@@ -199,8 +199,8 @@ class TeamsRepo(BaseRepo):
             team_id: IdType
             ) -> TeamsRoleType | None:
         stmt = (select(TeamMembership.team_role)
-                .where(TeamMembership.user_id==user_id,
-                       TeamMembership.team_id==team_id))
+                .where(TeamMembership.user_id == user_id,
+                       TeamMembership.team_id == team_id))
         return await self.session.scalar(stmt)
 
 
@@ -301,11 +301,12 @@ class EvaluationsRepo(BaseRepo):
             ) -> TaskSchema | None:
 
         stmt = (select(Tasks)
-                .where(Tasks.id==task_id,
-                        Tasks.team_id==team_id,
-                        Tasks.status==TaskStatus.done))
+                .where(Tasks.id == task_id,
+                       Tasks.team_id == team_id,
+                       Tasks.status == TaskStatus.done))
         task = await self.session.scalar(stmt)
-        if task is None: return None
+        if task is None:
+            return None
         return TaskSchema.model_validate(task)
 
     async def create_evaluation(self,

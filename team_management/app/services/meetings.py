@@ -63,7 +63,6 @@ class MeetingsService(BaseService):
 
             return CreateMeetingsResponse(meeting_id=meeting_id)
 
-
     async def add_user_to_meeting(
             self,
             team_id: IdType,
